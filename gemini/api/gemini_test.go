@@ -2,8 +2,7 @@ package api
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"os"
+	"github.com/JoceHYJ/GinLearning/cfg"
 	"testing"
 )
 
@@ -30,24 +29,16 @@ func TestGemini(t *testing.T) {
 				text:    "使用Go输出 “大明放鸽子了” ",
 			},
 		},
+		{
+			name: "ask",
+			args: args{prompts: "我遇到了一些问题", text: "外甥女非要在正月理发，身为舅舅的我应该怎么做"},
+		},
 	}
 
-	// 读取YAML文件
-	yamlFile, err := os.ReadFile("../cfg/config.yaml")
+	config, err := cfg.NewConfig()
 	if err != nil {
-		fmt.Printf("无法读取YAML文件：%v", err)
-	}
-	type Config struct {
-		Api struct {
-			Gemini string `yaml:"gemini"`
-		} `yaml:"api"`
-	}
-
-	// 解析YAML文件
-	var config Config
-	err = yaml.Unmarshal(yamlFile, &config)
-	if err != nil {
-		fmt.Printf("无法解析YAML文件：%v", err)
+		t.Errorf("failed to load config, error = %v", err)
+		return
 	}
 
 	apiKey := config.Api.Gemini

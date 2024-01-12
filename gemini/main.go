@@ -14,7 +14,7 @@ type Config struct {
 
 func main() {
 	// 读取YAML文件
-	yamlFile, err := os.ReadFile("cfg/config.yaml")
+	yamlFile, err := os.ReadFile("../cfg/config.yaml")
 	if err != nil {
 		fmt.Printf("无法读取YAML文件：%v", err)
 	}
