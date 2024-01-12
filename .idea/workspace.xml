@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="499bd754-56a0-46b2-acfa-268b5170f8bb" name="更改" comment="update">
-      <change afterPath="$PROJECT_DIR$/07_fileUpload/fileUpload.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/07_fileUpload/test.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/07_fileUpload/testZip.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+    <list default="true" id="499bd754-56a0-46b2-acfa-268b5170f8bb" name="更改" comment="CREATE fileUpload">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,6 +52,7 @@
   "keyToString": {
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "DefaultGoTemplateProperty": "Go File",
+    "Go 构建.go build GinLearning/01_getMethod.executor": "Run",
     "Go 构建.go build GinLearning/07_fileUpload.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -73,7 +69,16 @@
     "nodejs_package_manager_path": "npm"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go 构建.go build GinLearning/01_getMethod">
+    <configuration name="go build GinLearning/01_getMethod" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="GinLearning" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="GinLearning/01_getMethod" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/01_getMethod/getReq.go" />
+      <method v="2" />
+    </configuration>
     <configuration name="go build GinLearning/07_fileUpload" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="GinLearning" />
       <working_directory value="$PROJECT_DIR$" />
@@ -85,6 +90,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go 构建.go build GinLearning/01_getMethod" />
         <item itemvalue="Go 构建.go build GinLearning/07_fileUpload" />
       </list>
     </recent_temporary>
@@ -127,7 +133,8 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Init repo" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="CREATE fileUpload" />
+    <option name="LAST_COMMIT_MESSAGE" value="CREATE fileUpload" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
