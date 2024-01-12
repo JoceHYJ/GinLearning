@@ -13,7 +13,7 @@ func main() {
 		if err != nil {
 			c.String(http.StatusBadRequest, "file uploading failed")
 		}
-		dst := "/home/jocehyj/goWorkspace/src/Learning/GinLearning/07_fileUpload/"
+		dst := "files/"
 		c.SaveUploadedFile(file, dst+file.Filename) // 文件上传方法
 		c.String(http.StatusOK, fmt.Sprintf("%s uploading succeed", file.Filename))
 	})
