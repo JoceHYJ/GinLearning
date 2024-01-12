@@ -30,6 +30,20 @@ func TestGemini(t *testing.T) {
 				text:    "使用Go输出 “大明放鸽子了” ",
 			},
 		},
+		{
+			name: "coding",
+			args: args{
+				prompts: "请告诉我正月可以理发嘛：",
+				text:    "正月可以理发嘛？答：",
+			},
+		},
+		{
+			name: "coding",
+			args: args{
+				prompts: "请告诉我正月为什么不可以理发嘛：",
+				text:    "正月为什么不可以理发嘛？答：",
+			},
+		},
 	}
 
 	// 读取YAML文件
