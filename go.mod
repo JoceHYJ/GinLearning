@@ -1,4 +1,4 @@
-module 03_redirect
+module GinLearning
 
 go 1.20
 
