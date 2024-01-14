@@ -1,0 +1,56 @@
+### 插入数据
+# curl --location 'localhost:8080/gorm/insert'
+#--header 'Content-Type: application/json'
+#--data '{
+#    "category": "lp010",
+#    "number": "21539253",
+#    "name": "computer",
+#    "made_in": "China",
+#    "production_time": "2021-05-01T01:01:09+08:00"
+#}'
+POST localhost:8080/gorm/insert
+Content-Type: application/json
+
+{
+  "category": "lp036",
+  "number": "318538223",
+  "name": "mobilephone",
+  "made_in": "China",
+  "production_time": "2021-09-04T08:06:27+08:00"
+}
+
+### 插入数据
+POST localhost:8080/gorm/insert
+Content-Type: application/json
+
+{
+  "category": "lp036",
+  "number": "28289384",
+  "name": "mobilephone",
+  "made_in": "China",
+  "production_time": "2023-12-04T08:06:27+08:00"
+}
+
+### 查询单条数据
+GET  localhost:8080/gorm/get?number=318538223
+
+### 查询多条数据
+GET localhost:8080/gorm/mulget?category=lp036
+
+### 更新数据
+PUT localhost:8080/gorm/update
+Content-Type: application/json
+
+{
+  "category": "lp036",
+  "number": "318538223",
+  "name": "mobilephone",
+  "made_in": "Japan",
+  "production_time": "2021-09-04T08:06:27+08:00"
+}
+
+### 删除数据
+DELETE  localhost:8080/gorm/delete?number=318538223
+
+### 删除数据
+DELETE  localhost:8080/gorm/delete?number=28289384
