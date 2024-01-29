@@ -17,7 +17,7 @@ type ValUser struct {
 type ValAddress struct {
 	Province string `validate:"required" json:"province"`
 	City     string `validate:"required" json:"city"`
-	Phone    string `validate:"numeric,len=11" json:"phone"`
+	Phone    string `validate:"numeric,len=11" json:"phone"` // 不能有空格
 }
 
 var validate *validator.Validate

@@ -12,7 +12,7 @@ import (
 type UserInfo struct {
 	Id   string `validate:"uuid" json:"id"`
 	Name string `validate:"checkName" json:"name"`
-	Age  uint   `validate:"min=0,max=130" json:"age"`
+	Age  uint   `validate:"min=0,max=130" json:"age"` // 不能有空格
 }
 
 var validate *validator.Validate
