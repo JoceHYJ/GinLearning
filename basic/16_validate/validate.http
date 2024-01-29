@@ -1,0 +1,9 @@
+### Send POST request with json body
+POST https://127.0.0.1:8080/validate
+Content-Type: application/json
+
+{
+  "id": {{uuid}},
+  "name": "tomato",
+  "age": 22
+}
