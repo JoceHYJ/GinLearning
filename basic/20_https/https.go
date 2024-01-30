@@ -23,7 +23,7 @@ func main() {
 		})
 	})
 
-	path := "/home/jocehyj/goWorkspace/src/Learning/GinLearning/basic/CA/"
+	path := "./basic/CA/"
 	r.RunTLS(":8080", path+"ca.crt", path+"ca.key") // 开启 HTTPS 服务
 }
 
