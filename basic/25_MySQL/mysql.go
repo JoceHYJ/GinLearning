@@ -52,7 +52,39 @@ func main() {
 	r.GET("sql/get", getData)
 	r.GET("sql/mulget", getMulData)
 	r.PUT("sql/update", updateData)
+	r.DELETE("sql/delete", deleteData)
 	r.Run(":8080")
+}
+
+// deleteData 删除操作
+func deleteData(c *gin.Context) {
+	name := c.Query("name")
+	var count int
+	// 1、先查询
+	sqlStr := "select count(*) from user where name=?"
+	err := sqlDb.QueryRow(sqlStr, name).Scan(&count)
+	if count <= 0 || err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "删除数据不存在"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	// 2、再删除
+	delStr := "delete from user where name=?"
+	ret, err := sqlDb.Exec(delStr, name)
+	if err != nil {
+		fmt.Printf("delete failed, err:%v\n", err)
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "删除失败"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	sqlResponse.Code = http.StatusOK
+	sqlResponse.Message = "删除成功"
+	sqlResponse.Data = "OK"
+	fmt.Println(ret.LastInsertId()) // 打印结果
 }
 
 // updateData 修改操作
