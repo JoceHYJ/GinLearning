@@ -49,9 +49,31 @@ func main() {
 	r := gin.Default()
 	// 数据库的 CRUD ---> Gin 的 POST GET PUT DELETE 方法
 	r.POST("sql/insert", insertData)
+	r.GET("sql/get", getData)
 	r.Run(":8080")
 }
 
+// getData 查询操作
+func getData(c *gin.Context) {
+	name := c.Query("name")
+	sqlStr := "select age, address from user where name = ?"
+	var u SqlUser
+	err := sqlDb.QueryRow(sqlStr, name).Scan(&u.Age, &u.Address)
+	if err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "查询错误"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	u.Name = name
+	sqlResponse.Code = http.StatusOK
+	sqlResponse.Message = "读取成功"
+	sqlResponse.Data = u
+	c.JSON(http.StatusOK, sqlResponse)
+}
+
+// insertData 插入操作
 func insertData(c *gin.Context) {
 	var u SqlUser
 	err := c.BindJSON(&u)
