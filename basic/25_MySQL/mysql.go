@@ -51,7 +51,36 @@ func main() {
 	r.POST("sql/insert", insertData)
 	r.GET("sql/get", getData)
 	r.GET("sql/mulget", getMulData)
+	r.PUT("sql/update", updateData)
 	r.Run(":8080")
+}
+
+// updateData 修改操作
+func updateData(c *gin.Context) {
+	var u SqlUser
+	err := c.BindJSON(&u)
+	if err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "参数错误"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	sqlStr := "update user set age=?, address=? where name=?"
+	ret, err := sqlDb.Exec(sqlStr, u.Age, u.Address, u.Name)
+	if err != nil {
+		fmt.Printf("update failed, err:%v\n", err)
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "更新失败"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	sqlResponse.Code = http.StatusOK
+	sqlResponse.Message = "更新成功"
+	sqlResponse.Data = "OK"
+	c.JSON(http.StatusOK, sqlResponse)
+	fmt.Println(ret.LastInsertId()) // 打印结果
 }
 
 // getMulData 查询操作(多条记录)
