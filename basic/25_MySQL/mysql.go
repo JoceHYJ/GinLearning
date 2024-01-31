@@ -50,10 +50,39 @@ func main() {
 	// 数据库的 CRUD ---> Gin 的 POST GET PUT DELETE 方法
 	r.POST("sql/insert", insertData)
 	r.GET("sql/get", getData)
+	r.GET("sql/mulget", getMulData)
 	r.Run(":8080")
 }
 
-// getData 查询操作
+// getMulData 查询操作(多条记录)
+func getMulData(c *gin.Context) {
+	address := c.Query("address")
+	sqlStr := "select name, age from user where address=?"
+	rows, err := sqlDb.Query(sqlStr, address)
+	if err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "查询错误"
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		return
+	}
+	defer rows.Close()
+	// 创建切片并通过 for 循环把查询到的数据写入切片中
+	resUser := make([]SqlUser, 0)
+	for rows.Next() {
+		var userTemp SqlUser
+		rows.Scan(&userTemp.Name, &userTemp.Age)
+		userTemp.Address = address
+		resUser = append(resUser, userTemp)
+	}
+	// 将数据返回 Client
+	sqlResponse.Code = http.StatusOK
+	sqlResponse.Message = "读取成功"
+	sqlResponse.Data = resUser
+	c.JSON(http.StatusOK, sqlResponse)
+}
+
+// getData 查询操作(单条记录)
 func getData(c *gin.Context) {
 	name := c.Query("name")
 	sqlStr := "select age, address from user where name = ?"
