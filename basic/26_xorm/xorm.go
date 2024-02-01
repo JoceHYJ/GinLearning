@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/xorm"
 	"net/http"
 	"time"
+	"xorm.io/xorm"
 )
 
-// xorm 依赖: go get github.com/go-xorm/xorm
+// xorm 依赖: go get xorm.io/xorm
 // 通过 xorm 进行数据库的 CRUD 操作
 
 var x *xorm.Engine
