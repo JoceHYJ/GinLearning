@@ -54,7 +54,37 @@ func main() {
 	r.GET("xorm/get", xormGetData)
 	r.GET("xorm/mulget", xormGetMulData)
 	r.PUT("xorm/update", xormUpdateData)
+	r.DELETE("xorm/delete", xormDeleteData)
 	r.Run(":8080")
+}
+
+// xormUpdateData 删除操作
+func xormDeleteData(c *gin.Context) {
+	stuNum := c.Query("stu_num")
+	// 1、先查询
+	var stus []Stu
+	err := x.Where("stu_num=?", stuNum).Find(&stus)
+	if err != nil || len(stus) <= 0 {
+		xormResponse.Code = http.StatusBadRequest
+		xormResponse.Message = "数据不存在"
+		xormResponse.Data = "error"
+		c.JSON(http.StatusOK, xormResponse)
+		return
+	}
+	// 2、再删除
+	affected, err := x.Where("stu_num=?", stuNum).Delete(&Stu{})
+	if err != nil || affected <= 0 {
+		xormResponse.Code = http.StatusBadRequest
+		xormResponse.Message = "删除失败"
+		xormResponse.Data = "error"
+		c.JSON(http.StatusOK, xormResponse)
+		return
+	}
+	xormResponse.Code = http.StatusOK
+	xormResponse.Message = "删除成功"
+	xormResponse.Data = "OK"
+	c.JSON(http.StatusOK, xormResponse)
+	fmt.Println(affected) // 打印结果
 }
 
 // xormUpdateData 修改操作
