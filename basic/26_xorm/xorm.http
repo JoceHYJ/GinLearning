@@ -1,0 +1,41 @@
+### 插入数据
+POST localhost:8080/xorm/insert
+Content-Type: application/json
+
+{
+  "stu_num": "20381053",
+  "name": "张三",
+  "age": 21
+}
+
+### 插入数据
+POST localhost:8080/xorm/insert
+Content-Type: application/json
+
+{
+  "stu_num": "9289943",
+  "name": "李四",
+  "age": 30
+}
+
+### 单条查询
+GET localhost:8080/xorm/get?stu_num=20381053
+
+### 多条查询
+GET localhost:8080/xorm/mulget?name=张三
+
+### 修改
+PUT localhost:8080/xorm/update
+Content-Type: application/json
+
+{
+  "stu_num": "20381053",
+  "name": "王五",
+  "age": 20
+}
+
+### 删除
+DELETE localhost:8080/xorm/delete?stu_num=20381053
+
+### 删除
+DELETE localhost:8080/xorm/delete?stu_num=9289943
