@@ -84,6 +84,7 @@ func deleteData(c *gin.Context) {
 	sqlResponse.Code = http.StatusOK
 	sqlResponse.Message = "删除成功"
 	sqlResponse.Data = "OK"
+	c.JSON(http.StatusOK, sqlResponse)
 	fmt.Println(ret.LastInsertId()) // 打印结果
 }
 
