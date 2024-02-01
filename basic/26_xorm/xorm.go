@@ -51,7 +51,26 @@ func main() {
 	r := gin.Default()
 	// 数据库的 CRUD ---> gin 的 POST GET PUT DELETE 方法
 	r.POST("xorm/insert", xormInsertData)
+	r.GET("xorm/get", xormGetData)
 	r.Run(":8080")
+}
+
+// xormGetData 查询操作(单条操作)
+func xormGetData(c *gin.Context) {
+	stuNum := c.Query("stu_num")
+	var stus []Stu
+	err := x.Where("stu_num=?", stuNum).Find(&stus)
+	if err != nil {
+		xormResponse.Code = http.StatusBadRequest
+		xormResponse.Message = "查询错误"
+		xormResponse.Data = "error"
+		c.JSON(http.StatusOK, xormResponse)
+		return
+	}
+	xormResponse.Code = http.StatusOK
+	xormResponse.Message = "查询成功"
+	xormResponse.Data = stus
+	c.JSON(http.StatusOK, xormResponse)
 }
 
 // xormInsertData 插入操作
