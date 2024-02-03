@@ -1,0 +1,4 @@
+db:
+  mysql: "root:pwd@tcp(127.0.0.1:3306)/xorm?charset=utf8mb4&parseTime=true&loc=Local"
+business:
+  key: "stu_num"
