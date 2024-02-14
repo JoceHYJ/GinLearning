@@ -58,3 +58,11 @@ Content-Type: application/json
 ### 删除数据
 DELETE localhost:8080/gorm/delete?number=28289384
 Content-Type: application/json
+
+### 删除数据
+DELETE localhost:8080/gorm/delete?number=21539253
+Content-Type: application/json
+
+### 删除数据
+DELETE localhost:8080/gorm/delete?number=21539252
+Content-Type: application/json
