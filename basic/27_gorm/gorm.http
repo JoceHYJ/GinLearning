@@ -54,3 +54,7 @@ Content-Type: application/json
   "made_in": "Korea",
   "production_time": "2023-12-04T08:06:27+08:00"
 }
+
+### 删除数据
+DELETE localhost:8080/gorm/delete?number=28289384
+Content-Type: application/json
