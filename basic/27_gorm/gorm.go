@@ -48,8 +48,26 @@ func main() {
 	r.GET("gorm/get", gormGetData)
 	r.GET("gorm/mulget", gormGetMulData)
 	r.PUT("gorm/update", gormUpdateData)
-
+	r.DELETE("gorm/delete", gormDeleteData)
 	r.Run(":8080")
+}
+
+// gormDeleteData 删除数据
+func gormDeleteData(c *gin.Context) {
+	number := c.Query("number")
+	// 1.先查询
+	var count int64
+	gormDB.Model(&Product{}).Where("number=?", number).Count(&count)
+	if count <= 0 {
+		HandleResponse(c, http.StatusBadRequest, "数据不存在", "error")
+	}
+	// 2.再删除
+	tx := gormDB.Where("number=?", number).Delete(&Product{})
+	if tx.RowsAffected > 0 {
+		HandleResponse(c, http.StatusOK, "删除成功", "OK")
+	}
+	HandleResponse(c, http.StatusBadRequest, "删除失败", tx)
+	fmt.Println(tx) // 打印结果
 }
 
 // gormUpdateData 更新数据
