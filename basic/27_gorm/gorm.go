@@ -54,17 +54,26 @@ func main() {
 
 // gormDeleteData 删除数据
 func gormDeleteData(c *gin.Context) {
+	// 捕获异常
+	defer func() {
+		err := recover()
+		if err != nil {
+			HandleResponse(c, http.StatusBadRequest, "错误", err)
+		}
+	}()
 	number := c.Query("number")
 	// 1.先查询
 	var count int64
 	gormDB.Model(&Product{}).Where("number=?", number).Count(&count)
 	if count <= 0 {
 		HandleResponse(c, http.StatusBadRequest, "数据不存在", "error")
+		return
 	}
 	// 2.再删除
 	tx := gormDB.Where("number=?", number).Delete(&Product{})
 	if tx.RowsAffected > 0 {
 		HandleResponse(c, http.StatusOK, "删除成功", "OK")
+		return
 	}
 	HandleResponse(c, http.StatusBadRequest, "删除失败", tx)
 	fmt.Println(tx) // 打印结果
@@ -72,10 +81,18 @@ func gormDeleteData(c *gin.Context) {
 
 // gormUpdateData 更新数据
 func gormUpdateData(c *gin.Context) {
+	// 捕获异常
+	defer func() {
+		err := recover()
+		if err != nil {
+			HandleResponse(c, http.StatusBadRequest, "错误", err)
+		}
+	}()
 	var p Product
 	err := c.Bind(&p)
 	if err != nil {
 		HandleResponse(c, http.StatusBadRequest, "参数错误", err)
+		return
 	}
 	// 1.先查询
 	var count int64
@@ -83,11 +100,13 @@ func gormUpdateData(c *gin.Context) {
 	//fmt.Println("count:", count)
 	if count <= 0 {
 		HandleResponse(c, http.StatusBadRequest, "数据不存在", "error")
+		return
 	}
 	// 2.再更新
 	tx := gormDB.Model(&Product{}).Where("number=?", p.Number).Updates(&p)
 	if tx.RowsAffected > 0 {
 		HandleResponse(c, http.StatusOK, "更新成功", "OK")
+		return
 	}
 	fmt.Printf("update failed, err:%v\n", err)
 	HandleResponse(c, http.StatusBadRequest, "更新失败", tx)
@@ -96,36 +115,63 @@ func gormUpdateData(c *gin.Context) {
 
 // gormGetMulData 查询多条数据
 func gormGetMulData(c *gin.Context) {
+	// 捕获异常
+	defer func() {
+		err := recover()
+		if err != nil {
+			HandleResponse(c, http.StatusBadRequest, "错误", err)
+		}
+	}()
 	category := c.Query("category")
 	products := make([]Product, 10)
 	tx := gormDB.Where("category = ?", category).Find(&products).Limit(10)
 	if tx.Error != nil {
 		HandleResponse(c, http.StatusBadRequest, "查询错误", tx.Error)
+		return
 	}
 	HandleResponse(c, http.StatusOK, "查询成功", products)
+	return
 }
 
 // gormGetData 查询单条数据
 func gormGetData(c *gin.Context) {
+	// 捕获异常
+	defer func() {
+		err := recover()
+		if err != nil {
+			HandleResponse(c, http.StatusBadRequest, "错误", err)
+		}
+	}()
 	number := c.Query("number")
 	product := Product{}
 	tx := gormDB.Where("number=?", number).First(&product)
 	if tx.Error != nil {
 		HandleResponse(c, http.StatusBadRequest, "查询错误", tx.Error)
+		return
 	}
 	HandleResponse(c, http.StatusOK, "查询成功", product)
+	return
 }
 
 // gormInsertData 插入操作
 func gormInsertData(c *gin.Context) {
+	// 捕获异常
+	defer func() {
+		err := recover()
+		if err != nil {
+			HandleResponse(c, http.StatusBadRequest, "错误", err)
+		}
+	}()
 	var p Product
 	err := c.Bind(&p)
 	if err != nil {
 		HandleResponse(c, http.StatusBadRequest, "参数错误", err)
+		return
 	}
 	tx := gormDB.Create(&p)
 	if tx.RowsAffected > 0 {
 		HandleResponse(c, http.StatusOK, "写入成功", "OK")
+		return
 	}
 	fmt.Printf("insert failed, err:%v\n", err)
 	HandleResponse(c, http.StatusBadRequest, "写入失败", tx)
@@ -137,5 +183,4 @@ func HandleResponse(c *gin.Context, code int, msg string, data any) {
 	gormResponse.Message = msg
 	gormResponse.Data = data
 	c.JSON(http.StatusOK, gormResponse)
-	return
 }
