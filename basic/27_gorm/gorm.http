@@ -1,0 +1,56 @@
+### 插入数据
+POST localhost:8080/gorm/insert
+Content-Type: application/json
+
+{
+  "category": "lp010",
+  "number": "21539253",
+  "name": "computer_01",
+  "made_in": "China",
+  "production_time": "2021-05-01T01:01:09+08:00"
+}
+
+### 插入数据
+POST localhost:8080/gorm/insert
+Content-Type: application/json
+
+{
+  "category": "lp010",
+  "number": "21539252",
+  "name": "computer_02",
+  "made_in": "USA",
+  "production_time": "2021-05-01T01:01:09+09:00"
+}
+
+
+### 插入数据
+POST localhost:8080/gorm/insert
+Content-Type: application/json
+
+{
+  "category": "lp036",
+  "number": "28289384",
+  "name": "mobile_phone",
+  "made_in": "China",
+  "production_time": "2023-12-04T08:06:27+08:00"
+}
+
+### 查询单条数据
+GET localhost:8080/gorm/get?number=21539252
+Content-Type: application/json
+
+### 查询多条数据
+GET localhost:8080/gorm/mulget?category=lp010
+Content-Type: application/json
+
+### 更新数据
+PUT localhost:8080/gorm/update
+Content-Type: application/json
+
+{
+  "category": "lp036",
+  "number": "28289384",
+  "name": "mobile_phone",
+  "made_in": "Korea",
+  "production_time": "2023-12-04T08:06:27+08:00"
+}
