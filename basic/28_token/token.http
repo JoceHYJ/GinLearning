@@ -1,0 +1,19 @@
+### POST请求分发 Token
+POST localhost:8080/getTokenHMAC
+Content-Type: application/json
+
+{
+  "id": "2010131348",
+  "name": "tomato",
+  "telephone": "13812345678",
+  "password": "000"
+}
+
+### POST请求验证 Token
+POST localhost:8080/checkTokenHMAC
+Authorization: tomato: // 贴入 getTokenHMAC 分发的 token
+Content-Type: application/json
+
+{
+  "id": "2010131348"
+}
