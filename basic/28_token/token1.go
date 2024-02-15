@@ -23,6 +23,7 @@ type MyClaims struct {
 
 var jwtKey = []byte("a_secret_key") // 证书签名密钥
 
+// 通过消息认证码 (HMAC) 实现 Token
 func main() {
 	r := gin.Default()
 	// Token 分发
