@@ -1,3 +1,7 @@
+###
+# Token 测试代码
+# HMAC
+
 ### POST请求分发 Token
 POST localhost:8080/getTokenHMAC
 Content-Type: application/json
@@ -11,7 +15,31 @@ Content-Type: application/json
 
 ### POST请求验证 Token
 POST localhost:8080/checkTokenHMAC
-Authorization: tomato: // 贴入 getTokenHMAC 分发的 token
+Authorization: tomato: # 贴入 getTokenHMAC 分发的 token
+Content-Type: application/json
+
+{
+  "id": "2010131348"
+}
+
+
+###
+# RSA
+
+### POST请求分发 Token
+POST localhost:8080/getTokenRSA
+Content-Type: application/json
+
+{
+  "id": "2010131348",
+  "name": "tomato",
+  "telephone": "13812345678",
+  "password": "000"
+}
+
+### POST请求验证 Token
+POST localhost:8080/checkTokenRSA
+Authorization: tomato: # 贴入 getTokenRSA 分发的 token
 Content-Type: application/json
 
 {
