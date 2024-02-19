@@ -2,6 +2,7 @@ package main
 
 import (
 	"GinLearning/gin_application/common"
+	"GinLearning/gin_application/route"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"os"
@@ -11,8 +12,13 @@ func main() {
 	InitConfig()
 	common.InitDB()
 	r := gin.Default()
+	r = route.CollectRoute(r)
 	port := viper.GetString("server.port")
-	r.Run(":" + port)
+	if port != "" {
+		r.Run(":" + port)
+	} else {
+		r.Run() // 默认端口 8080
+	}
 }
 
 func InitConfig() {
@@ -30,6 +36,4 @@ func InitConfig() {
 	if err != nil {
 		panic(err)
 	}
-	// 这里面，可以从 yaml 当中读取并写入到 Cfg 里面
-
 }

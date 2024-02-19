@@ -29,9 +29,7 @@ func InitDB() *gorm.DB {
 		database,
 		charset,
 		url.QueryEscape(loc))
-	//argsV2 := "root:010729@tcp(127.0.0.1:3306)/gindb?charset=utf8mb4&parseTime=True&loc=Local"
 	fmt.Println("args   is :", args)
-	//fmt.Println("argsV2 is: ", argsV2)
 	db, err := gorm.Open(mysql.Open(args), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database, err:" + err.Error())

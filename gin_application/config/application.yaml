@@ -1,7 +1,7 @@
 server:
   port: "9988"
 datasource:
-  dsn: "root:010729@tcp(127.0.0.1:3306)/gindb?charset=utf8mb4&parseTime=True&loc=Local"
+#  dsn: "root:010729@tcp(127.0.0.1:3306)/gindb?charset=utf8mb4&parseTime=True&loc=Local"
   driverName: "mysql"
   host: "127.0.0.1"
   port: "3306"
