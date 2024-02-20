@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-// 根据编码查询
+// GetSysPostByCode 根据编码查询
 func GetSysPostByCode(postCode string) (sysPost entity.SysPost) {
 	Db.Where("post_code = ?", postCode).First(&sysPost)
 	return sysPost
 }
 
-// 根据名称查询
+// GetSysPostByName 根据名称查询
 func GetSysPostByName(postName string) (sysPost entity.SysPost) {
 	Db.Where("post_name = ?", postName).First(&sysPost)
 	return sysPost
 }
 
-// 新增岗位
+// CreateSysPost 新增岗位
 func CreateSysPost(sysPost entity.SysPost) bool {
 	sysPostByCode := GetSysPostByCode(sysPost.PostCode)
 	if sysPostByCode.ID > 0 {
@@ -46,7 +46,7 @@ func CreateSysPost(sysPost entity.SysPost) bool {
 	return false
 }
 
-// 分页查询岗位列表
+// GetSysPostList 分页查询岗位列表
 func GetSysPostList(PageNum, PageSize int, PostName, PostStatus, BeginTime, EndTime string) (sysPost []entity.SysPost, count int64) {
 	curDb := Db.Table("sys_post")
 	if PostName != "" {
@@ -63,13 +63,13 @@ func GetSysPostList(PageNum, PageSize int, PostName, PostStatus, BeginTime, EndT
 	return sysPost, count
 }
 
-// 根据id查询岗位
+// GetSysPostById 根据id查询岗位
 func GetSysPostById(Id int) (sysPost entity.SysPost) {
 	Db.First(&sysPost, Id)
 	return sysPost
 }
 
-// 修改岗位
+// UpdateSysPost 修改岗位
 func UpdateSysPost(post entity.SysPost) (sysPost entity.SysPost) {
 	Db.First(&sysPost, post.ID)
 	sysPost.PostName = post.PostName
@@ -82,17 +82,17 @@ func UpdateSysPost(post entity.SysPost) (sysPost entity.SysPost) {
 	return sysPost
 }
 
-// 根据id删除岗位
+// DeleteSysPostById 根据id删除岗位
 func DeleteSysPostById(dto entity.SysPostIdDto) {
 	Db.Delete(&entity.SysPost{}, dto.Id)
 }
 
-// 批量删除岗位
+// BatchDeleteSysPost 批量删除岗位
 func BatchDeleteSysPost(dto entity.DelSysPostDto) {
 	Db.Where("id in (?)", dto.Ids).Delete(&entity.SysPost{})
 }
 
-// 修改状态
+// UpdateSysPostStatus 修改状态
 func UpdateSysPostStatus(dto entity.UpdateSysPostStatusDto) {
 	var sysPost entity.SysPost
 	Db.First(&sysPost, dto.Id)
@@ -100,7 +100,7 @@ func UpdateSysPostStatus(dto entity.UpdateSysPostStatusDto) {
 	Db.Save(&sysPost)
 }
 
-// 岗位下拉列表
+// QuerySysPostVoList 岗位下拉列表
 func QuerySysPostVoList() (sysPostVo []entity.SysPostVo) {
 	Db.Table("sys_post").Select("id, post_name").Scan(&sysPostVo)
 	return sysPostVo

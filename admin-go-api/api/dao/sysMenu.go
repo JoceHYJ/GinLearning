@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-// 根据菜单名称查询
+// GetSysMenuByName 根据菜单名称查询
 func GetSysMenuByName(menuName string) (sysMenu entity.SysMenu) {
 	Db.Where("menu_name = ?", menuName).First(&sysMenu)
 	return sysMenu
 }
 
-// 新增菜单
+// CreateSysMenu 新增菜单
 func CreateSysMenu(addSysMenu entity.SysMenu) bool {
 	sysMenuByName := GetSysMenuByName(addSysMenu.MenuName)
 	if sysMenuByName.ID != 0 {
@@ -66,19 +66,19 @@ func CreateSysMenu(addSysMenu entity.SysMenu) bool {
 	return false
 }
 
-// 查询新增选项列表
+// QuerySysMenuVoList 查询新增选项列表
 func QuerySysMenuVoList() (sysMenuVo []entity.SysMenuVo) {
 	Db.Table("sys_menu").Select("id, menu_name AS label, parent_id").Scan(&sysMenuVo)
 	return sysMenuVo
 }
 
-// 根据id查询菜单详情
+// GetSysMenu 根据id查询菜单详情
 func GetSysMenu(Id int) (sysMenu entity.SysMenu) {
 	Db.First(&sysMenu, Id)
 	return sysMenu
 }
 
-// 修改菜单
+// UpdateSysMenu 修改菜单
 func UpdateSysMenu(menu entity.SysMenu) (sysMenu entity.SysMenu) {
 	Db.First(&sysMenu, menu.ID)
 	sysMenu.ParentId = menu.ParentId
@@ -93,13 +93,13 @@ func UpdateSysMenu(menu entity.SysMenu) (sysMenu entity.SysMenu) {
 	return sysMenu
 }
 
-// 查询是否分配菜单
+// GetSysRoleMenu 查询是否分配菜单
 func GetSysRoleMenu(id uint) (sysRoleMenu entity.SysRoleMenu) {
 	Db.Where("menu_id = ?", id).First(&sysRoleMenu)
 	return sysRoleMenu
 }
 
-// 删除菜单
+// DeleteSysMenu 删除菜单
 func DeleteSysMenu(dto entity.SysMenuIdDto) bool {
 	// 菜单已分配角色不能删除
 	sysRoleMenu := GetSysRoleMenu(dto.Id)
@@ -111,7 +111,7 @@ func DeleteSysMenu(dto entity.SysMenuIdDto) bool {
 	return true
 }
 
-// 查询菜单列表
+// GetSysMenuList 查询菜单列表
 func GetSysMenuList(MenuName string, MenuStatus string) (sysMenu []*entity.SysMenu) {
 	curDb := Db.Table("sys_menu").Order("sort")
 	if MenuName != "" {
@@ -124,7 +124,7 @@ func GetSysMenuList(MenuName string, MenuStatus string) (sysMenu []*entity.SysMe
 	return sysMenu
 }
 
-// 当前登录用户左侧菜单级列表
+// QueryMenuVoList 当前登录用户左侧菜单级列表
 func QueryMenuVoList(AdminId, MenuId uint) (menuSvo []entity.MenuSvo) {
 	const status, menuStatus, menuType = 1, 2, 2
 	Db.Table("sys_menu sm").
@@ -143,7 +143,7 @@ func QueryMenuVoList(AdminId, MenuId uint) (menuSvo []entity.MenuSvo) {
 	return menuSvo
 }
 
-// 当前登录用户左侧菜单列表
+// QueryLeftMenuList 当前登录用户左侧菜单列表
 func QueryLeftMenuList(Id uint) (leftMenuVo []entity.LeftMenuVo) {
 	const status, menuStatus, menuType uint = 1, 2, 1
 	Db.Table("sys_menu sm").
@@ -161,7 +161,7 @@ func QueryLeftMenuList(Id uint) (leftMenuVo []entity.LeftMenuVo) {
 	return leftMenuVo
 }
 
-// 当前登录用户的权限列表
+// QueryPermissionList 当前登录用户的权限列表
 func QueryPermissionList(Id uint) (valueVo []entity.ValueVo) {
 	const status, menuStatus, menuType uint = 1, 2, 1
 	Db.Table("sys_menu sm").

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// 新增登录日志
+// CreateSysLoginInfo 新增登录日志
 func CreateSysLoginInfo(username, ipAddress, loginLocation, browser, os, message string, loginStatus int) {
 	sysLoginInfo := entity.SysLoginInfo{
 		Username:      username,
@@ -25,7 +25,7 @@ func CreateSysLoginInfo(username, ipAddress, loginLocation, browser, os, message
 	Db.Save(&sysLoginInfo)
 }
 
-// 分页获取登录日志列表
+// GetSysLoginInfoList 分页获取登录日志列表
 func GetSysLoginInfoList(Username, LoginStatus, BeginTime, EndTime string, PageSize, PageNum int) (sysLoginInfo []entity.SysLoginInfo, count int64) {
 	curDb := Db.Table("sys_login_info")
 	if Username != "" {
@@ -42,17 +42,17 @@ func GetSysLoginInfoList(Username, LoginStatus, BeginTime, EndTime string, PageS
 	return sysLoginInfo, count
 }
 
-// 批量删除登录日志
+// BatchDeleteSysLoginInfo 批量删除登录日志
 func BatchDeleteSysLoginInfo(dto entity.DelSysLoginInfoDto) {
 	Db.Where("id in (?)", dto.Ids).Delete(&entity.SysLoginInfo{})
 }
 
-// 根据id删除日志
+// DeleteSysLoginInfoById 根据id删除日志
 func DeleteSysLoginInfoById(dto entity.SysLoginInfoIdDto) {
 	Db.Delete(&entity.SysLoginInfo{}, dto.Id)
 }
 
-// 清空登录日志
+// CleanSysLoginInfo 清空登录日志
 func CleanSysLoginInfo() {
 	Db.Exec("truncate table sys_login_Info")
 }

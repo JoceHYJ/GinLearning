@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-// 根据名称查询
+// GetSysRoleByName 根据名称查询
 func GetSysRoleByName(roleName string) (sysRole entity.SysRole) {
 	Db.Where("role_name = ?", roleName).First(&sysRole)
 	return sysRole
 }
 
-// 根据角色Key查询
+// GetSysRoleByKey 根据角色Key查询
 func GetSysRoleByKey(roleKey string) (sysRole entity.SysRole) {
 	Db.Where("role_key = ?", roleKey).First(&sysRole)
 	return sysRole
 }
 
-// 新增角色
+// CreateSysRole 新增角色
 func CreateSysRole(dto entity.AddSysRoleDto) bool {
 	sysRoleByName := GetSysRoleByName(dto.RoleName)
 	if sysRoleByName.ID > 0 {
@@ -46,13 +46,13 @@ func CreateSysRole(dto entity.AddSysRoleDto) bool {
 	return false
 }
 
-// 根据id获取详情
+// GetSysRoleById 根据id获取详情
 func GetSysRoleById(Id int) (sysRole entity.SysRole) {
 	Db.First(&sysRole, Id)
 	return sysRole
 }
 
-// 修改角色
+// UpdateSysRole 修改角色
 func UpdateSysRole(dto entity.UpdateSysRoleDto) (sysRole entity.SysRole) {
 	Db.First(&sysRole, dto.Id)
 	sysRole.RoleName = dto.RoleName
@@ -65,13 +65,13 @@ func UpdateSysRole(dto entity.UpdateSysRoleDto) (sysRole entity.SysRole) {
 	return sysRole
 }
 
-// 根据id删除角色
+// DeleteSysRoleById 根据id删除角色
 func DeleteSysRoleById(dto entity.SysRoleIdDto) {
 	Db.Table("sys_role").Delete(&entity.SysRole{}, dto.Id)
 	Db.Table("sys_role_menu").Where("role_id = ?", dto.Id).Delete(&entity.SysRoleMenu{})
 }
 
-// 角色状态启用/停用
+// UpdateSysRoleStatus 角色状态启用/停用
 func UpdateSysRoleStatus(dto entity.UpdateSysRoleStatusDto) bool {
 	var sysRole entity.SysRole
 	Db.First(&sysRole, dto.Id)
@@ -83,7 +83,7 @@ func UpdateSysRoleStatus(dto entity.UpdateSysRoleStatusDto) bool {
 	return false
 }
 
-// 分页查询角色列表
+// GetSysRoleList 分页查询角色列表
 func GetSysRoleList(PageNum, PageSize int, RoleName, status, BeginTime, EndTime string) (sysRole []*entity.SysRole, count int64) {
 	curDb := Db.Table("sys_role")
 	if RoleName != "" {
@@ -100,13 +100,13 @@ func GetSysRoleList(PageNum, PageSize int, RoleName, status, BeginTime, EndTime 
 	return sysRole, count
 }
 
-// 角色下拉列表
+// QuerySysRoleVoList 角色下拉列表
 func QuerySysRoleVoList() (sysRoleVo []entity.SysRoleVo) {
 	Db.Table("sys_role").Select("id, role_name").Scan(&sysRoleVo)
 	return sysRoleVo
 }
 
-// 根据角色的id查询菜单权限数据列表
+// QueryRoleMenuIdList 根据角色的id查询菜单权限数据列表
 func QueryRoleMenuIdList(Id int) (idVo []entity.IdVo) {
 	const menuType int = 3
 	Db.Table("sys_menu sm").
@@ -119,7 +119,7 @@ func QueryRoleMenuIdList(Id int) (idVo []entity.IdVo) {
 	return idVo
 }
 
-// 分配权限
+// AssignPermissions 分配权限
 func AssignPermissions(menu entity.RoleMenu) (err error) {
 	err = Db.Table("sys_role_menu").Where("role_id = ?", menu.Id).Delete(&entity.SysRoleMenu{}).Error
 	if err != nil {

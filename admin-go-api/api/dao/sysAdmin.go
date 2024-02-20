@@ -10,20 +10,20 @@ import (
 	"time"
 )
 
-// 用户详情
+// SysAdminDetail 用户详情
 func SysAdminDetail(dto entity.LoginDto) (sysAdmin entity.SysAdmin) {
 	username := dto.Username
 	Db.Where("username = ?", username).First(&sysAdmin)
 	return sysAdmin
 }
 
-// 根据用户名查询用户
+// GetSysAdminByUsername 根据用户名查询用户
 func GetSysAdminByUsername(username string) (sysAdmin entity.SysAdmin) {
 	Db.Where("username = ?", username).First(&sysAdmin)
 	return sysAdmin
 }
 
-// 新增用户
+// CreateSysAdmin 新增用户
 func CreateSysAdmin(dto entity.AddSysAdminDto) bool {
 	sysAdminByUsername := GetSysAdminByUsername(dto.Username)
 	if sysAdminByUsername.ID > 0 {
@@ -53,7 +53,7 @@ func CreateSysAdmin(dto entity.AddSysAdminDto) bool {
 	return false
 }
 
-// 根据id查询用户详情
+// GetSysAdminInfo 根据id查询用户详情
 func GetSysAdminInfo(Id int) (sysAdminInfo entity.SysAdminInfo) {
 	Db.Table("sys_admin").
 		Select("sys_admin.*, sys_admin_role.role_id").
@@ -63,7 +63,7 @@ func GetSysAdminInfo(Id int) (sysAdminInfo entity.SysAdminInfo) {
 	return sysAdminInfo
 }
 
-// 修改用户
+// UpdateSysAdmin 修改用户
 func UpdateSysAdmin(dto entity.UpdateSysAdminDto) (sysAdmin entity.SysAdmin) {
 	Db.First(&sysAdmin, dto.Id)
 	if dto.Username != "" {
@@ -94,14 +94,14 @@ func UpdateSysAdmin(dto entity.UpdateSysAdminDto) (sysAdmin entity.SysAdmin) {
 	return sysAdmin
 }
 
-// 根据id删除用户
+// DeleteSysAdminById 根据id删除用户
 func DeleteSysAdminById(dto entity.SysAdminIdDto) {
 	Db.First(&entity.SysAdmin{}, dto.Id)
 	Db.Delete(&entity.SysAdmin{}, dto.Id)
 	Db.Where("admin_id = ?", dto.Id).Delete(&entity.SysAdminRole{})
 }
 
-// 修改用户状态
+// UpdateSysAdminStatus 修改用户状态
 func UpdateSysAdminStatus(dto entity.UpdateSysAdminStatusDto) {
 	var sysAdmin entity.SysAdmin
 	Db.First(&sysAdmin, dto.Id)
@@ -109,7 +109,7 @@ func UpdateSysAdminStatus(dto entity.UpdateSysAdminStatusDto) {
 	Db.Save(&sysAdmin)
 }
 
-// 重置密码
+// ResetSysAdminPassword 重置密码
 func ResetSysAdminPassword(dto entity.ResetSysAdminPasswordDto) {
 	var sysAdmin entity.SysAdmin
 	Db.First(&sysAdmin, dto.Id)
@@ -117,7 +117,7 @@ func ResetSysAdminPassword(dto entity.ResetSysAdminPasswordDto) {
 	Db.Save(&sysAdmin)
 }
 
-// 分页查询用户列表
+// GetSysAdminList 分页查询用户列表
 func GetSysAdminList(PageSize, PageNum int, Username, Status, BeginTime, EndTime string) (sysAdminVo []entity.SysAdminVo, count int64) {
 	curDb := Db.Table("sys_admin").
 		Select("sys_admin.*, sys_post.post_name, sys_role.role_name, sys_dept.dept_name").
@@ -139,7 +139,7 @@ func GetSysAdminList(PageSize, PageNum int, Username, Status, BeginTime, EndTime
 	return sysAdminVo, count
 }
 
-// 修改个人信息
+// UpdatePersonal 修改个人信息
 func UpdatePersonal(dto entity.UpdatePersonalDto) (sysAdmin entity.SysAdmin) {
 	Db.First(&sysAdmin, dto.Id)
 	if dto.Icon != "" {
@@ -161,7 +161,7 @@ func UpdatePersonal(dto entity.UpdatePersonalDto) (sysAdmin entity.SysAdmin) {
 	return sysAdmin
 }
 
-// 修改个人密码
+// UpdatePersonalPassword 修改个人密码
 func UpdatePersonalPassword(dto entity.UpdatePersonalPasswordDto) (sysAdmin entity.SysAdmin) {
 	Db.First(&sysAdmin, dto.Id)
 	sysAdmin.Password = dto.NewPassword

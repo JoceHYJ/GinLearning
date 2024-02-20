@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// 查询部门列表
+// GetSysDeptList 查询部门列表
 func GetSysDeptList(DeptName string, DeptStatus string) (sysDept []entity.SysDept) {
 	curDb := Db.Table("sys_dept")
 	if DeptName != "" {
@@ -23,13 +23,13 @@ func GetSysDeptList(DeptName string, DeptStatus string) (sysDept []entity.SysDep
 	return sysDept
 }
 
-// 根据部门名称查询
+// GetSysDeptByName 根据部门名称查询
 func GetSysDeptByName(deptName string) (sysDept entity.SysDept) {
 	Db.Where("dept_name = ?", deptName).First(&sysDept)
 	return sysDept
 }
 
-// 新增部门
+// CreateSysDept 新增部门
 func CreateSysDept(sysDept entity.SysDept) bool {
 	sysDeptByName := GetSysDeptByName(sysDept.DeptName)
 	if sysDeptByName.ID > 0 {
@@ -59,13 +59,13 @@ func CreateSysDept(sysDept entity.SysDept) bool {
 	return false
 }
 
-// 根据id查询部门
+// GetSysDeptById 根据id查询部门
 func GetSysDeptById(Id int) (sysDept entity.SysDept) {
 	Db.First(&sysDept, Id)
 	return sysDept
 }
 
-// 修改部门
+// UpdateSysDept 修改部门
 func UpdateSysDept(dept entity.SysDept) (sysDept entity.SysDept) {
 	Db.First(&sysDept, dept.ID)
 	sysDept.ParentId = dept.ParentId
@@ -76,13 +76,13 @@ func UpdateSysDept(dept entity.SysDept) (sysDept entity.SysDept) {
 	return sysDept
 }
 
-// 查询部门是否有人
+// GetSysAdminDept 查询部门是否有人
 func GetSysAdminDept(id int) (sysAdmin entity.SysAdmin) {
 	Db.Where("dept_id = ?", id).First(&sysAdmin)
 	return sysAdmin
 }
 
-// 删除部门
+// DeleteSysDeptById 删除部门
 func DeleteSysDeptById(dto entity.SysDeptIdDto) bool {
 	sysAdmin := GetSysAdminDept(dto.Id)
 	if sysAdmin.ID > 0 {
@@ -93,7 +93,7 @@ func DeleteSysDeptById(dto entity.SysDeptIdDto) bool {
 	return true
 }
 
-// 部门下拉列表
+// QuerySysDeptVoList 部门下拉列表
 func QuerySysDeptVoList() (sysDeptVo []entity.SysDeptVo) {
 	Db.Table("sys_dept").Select("id, dept_name AS label, parent_id").Scan(&sysDeptVo)
 	return sysDeptVo
