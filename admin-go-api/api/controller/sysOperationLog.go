@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// 分页获取操作日志列表
+// GetSysOperationLogList 分页获取操作日志列表
 // @Summary 分页获取操作日志列表接口
 // @Produce json
 // @Description 分页获取操作日志列表接口
@@ -31,7 +31,7 @@ func GetSysOperationLogList(c *gin.Context) {
 	service.SysOperationLogService().GetSysOperationLogList(c, Username, BeginTime, EndTime, PageSize, PageNum)
 }
 
-// 根据id删除操作日志
+// DeleteSysOperationLogById 根据id删除操作日志
 // @Summary 根据id删除操作日志
 // @Produce json
 // @Description 根据id删除操作日志
@@ -45,7 +45,7 @@ func DeleteSysOperationLogById(c *gin.Context) {
 	service.SysOperationLogService().DeleteSysOperationLogById(c, dto)
 }
 
-// 批量删除操作日志
+// BatchDeleteSysOperationLog 批量删除操作日志
 // @Summary 批量删除操作日志接口
 // @Produce json
 // @Description 批量删除操作日志接口
@@ -59,7 +59,7 @@ func BatchDeleteSysOperationLog(c *gin.Context) {
 	service.SysOperationLogService().BatchDeleteSysOperationLog(c, dto)
 }
 
-// 清空操作日志
+// CleanSysOperationLog 清空操作日志
 // @Summary 清空操作日志接口
 // @Produce json
 // @Description 清空操作日志接口

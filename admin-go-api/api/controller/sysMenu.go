@@ -12,7 +12,7 @@ import (
 
 var sysMenu entity.SysMenu
 
-// 新增菜单
+// CreateSysMenu 新增菜单
 // @Summary 新增菜单接口
 // @Produce json
 // @Description 新增菜单接口
@@ -25,7 +25,7 @@ func CreateSysMenu(c *gin.Context) {
 	service.SysMenuService().CreateSysMenu(c, sysMenu)
 }
 
-// 查询新增选项列表
+// QuerySysMenuVoList 查询新增选项列表
 // @Summary 查询新增选项列表接口
 // @Produce json
 // @Description 查询新增选项列表接口
@@ -36,7 +36,7 @@ func QuerySysMenuVoList(c *gin.Context) {
 	service.SysMenuService().QuerySysMenuVoList(c)
 }
 
-// 根据id查询菜单
+// GetSysMenu 根据id查询菜单
 // @Summary 根据id查询菜单
 // @Produce json
 // @Description 根据id查询菜单
@@ -49,7 +49,7 @@ func GetSysMenu(c *gin.Context) {
 	service.SysMenuService().GetSysMenu(c, Id)
 }
 
-// 修改菜单
+// UpdateSysMenu 修改菜单
 // @Summary 修改菜单接口
 // @Produce json
 // @Description 修改菜单接口
@@ -62,7 +62,7 @@ func UpdateSysMenu(c *gin.Context) {
 	service.SysMenuService().UpdateSysMenu(c, sysMenu)
 }
 
-// 根据id删除菜单
+// DeleteSysMenu 根据id删除菜单
 // @Summary 根据id删除菜单接口
 // @Produce json
 // @Description 根据id删除菜单接口
@@ -76,7 +76,7 @@ func DeleteSysMenu(c *gin.Context) {
 	service.SysMenuService().DeleteSysMenu(c, dto)
 }
 
-// 查询菜单列表
+// GetSysMenuList 查询菜单列表
 // @Summary 查询菜单列表
 // @Produce json
 // @Description 查询菜单列表

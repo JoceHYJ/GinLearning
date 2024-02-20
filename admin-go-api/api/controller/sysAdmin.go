@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// @Summary 用户登录接口
+// Login @Summary 用户登录接口
 // @Produce json
 // @Description 用户登录接口
 // @Param data body entity.LoginDto true "data"
@@ -22,7 +22,7 @@ func Login(c *gin.Context) {
 	service.SysAdminService().Login(c, dto)
 }
 
-// 新增用户
+// CreateSysAdmin 新增用户
 // @Summary 新增用户接口
 // @Produce json
 // @Description 新增用户接口
@@ -36,7 +36,7 @@ func CreateSysAdmin(c *gin.Context) {
 	service.SysAdminService().CreateSysAdmin(c, dto)
 }
 
-// 根据id查询用户
+// GetSysAdminInfo 根据id查询用户
 // @Summary 根据id查询用户接口
 // @Produce json
 // @Description 根据id查询用户接口
@@ -49,7 +49,7 @@ func GetSysAdminInfo(c *gin.Context) {
 	service.SysAdminService().GetSysAdminInfo(c, Id)
 }
 
-// 修改用户
+// UpdateSysAdmin 修改用户
 // @Summary 修改用户接口
 // @Produce json
 // @Description 修改用户接口
@@ -63,7 +63,7 @@ func UpdateSysAdmin(c *gin.Context) {
 	service.SysAdminService().UpdateSysAdmin(c, dto)
 }
 
-// 根据id删除用户
+// DeleteSysAdminById 根据id删除用户
 // @Summary 根据id删除接口
 // @Produce json
 // @Description 根据id删除接口
@@ -92,7 +92,7 @@ func UpdateSysAdminStatus(c *gin.Context) {
 	service.SysAdminService().UpdateSysAdminStatus(c, dto)
 }
 
-// 重置密码
+// ResetSysAdminPassword 重置密码
 // @Summary 重置密码接口
 // @Produce json
 // @Description 重置密码接口
@@ -106,7 +106,7 @@ func ResetSysAdminPassword(c *gin.Context) {
 	service.SysAdminService().ResetSysAdminPassword(c, dto)
 }
 
-// 分页获取用户列表
+// GetSysAdminList 分页获取用户列表
 // @Summary 分页获取用户列表接口
 // @Produce json
 // @Description 分页获取用户列表接口
@@ -129,7 +129,7 @@ func GetSysAdminList(c *gin.Context) {
 	service.SysAdminService().GetSysAdminList(c, PageSize, PageNum, Username, Status, BeginTime, EndTime)
 }
 
-// 修改个人信息
+// UpdatePersonal 修改个人信息
 // @Summary 修改个人信息接口
 // @Produce json
 // @Description 修改个人信息接口
@@ -143,7 +143,7 @@ func UpdatePersonal(c *gin.Context) {
 	service.SysAdminService().UpdatePersonal(c, dto)
 }
 
-// 修改密码
+// UpdatePersonalPassword 修改密码
 // @Summary 修改密码接口
 // @Produce json
 // @Description 修改密码接口

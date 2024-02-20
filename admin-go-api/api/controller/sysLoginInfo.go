@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// 分页获取登录日志列表
+// GetSysLoginInfoList 分页获取登录日志列表
 // @Summary 分页获取登录日志列表接口
 // @Produce json
 // @Description 分页获取登录日志列表接口
@@ -33,7 +33,7 @@ func GetSysLoginInfoList(c *gin.Context) {
 	service.SysLoginInfoService().GetSysLoginInfoList(c, Username, LoginStatus, BeginTime, EndTime, PageSize, PageNum)
 }
 
-// 批量删除登录日志
+// BatchDeleteSysLoginInfo 批量删除登录日志
 // @Summary 批量删除登录日志接口
 // @Produce json
 // @Description 批量删除登录日志接口
@@ -47,7 +47,7 @@ func BatchDeleteSysLoginInfo(c *gin.Context) {
 	service.SysLoginInfoService().BatchDeleteSysLoginInfo(c, dto)
 }
 
-// 根据ID删除登录日志
+// DeleteSysLoginInfoById 根据ID删除登录日志
 // @Summary 根据ID删除登录日志接口
 // @Produce json
 // @Description 根据ID删除登录日志接口
@@ -61,7 +61,7 @@ func DeleteSysLoginInfoById(c *gin.Context) {
 	service.SysLoginInfoService().DeleteSysLoginInfo(c, dto)
 }
 
-// 清空登录日志
+// CleanSysLoginInfo 清空登录日志
 // @Summary 清空登录日志接口
 // @Produce json
 // @Description 清空登录日志接口

@@ -12,7 +12,7 @@ import (
 
 var sysDept entity.SysDept
 
-// 查询部门列表
+// GetSysDeptList 查询部门列表
 // @Summary 查询部门列表接口
 // @Produce json
 // @Description 查询部门列表接口
@@ -27,7 +27,7 @@ func GetSysDeptList(c *gin.Context) {
 	service.SysDeptService().GetSysDeptList(c, DeptName, DeptStatus)
 }
 
-// 新增部门
+// CreateSysDept 新增部门
 // @Summary 新增部门接口
 // @Produce json
 // @Description 新增部门接口

@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// 新增角色
+// CreateSysRole 新增角色
 // @Summary 新增角色接口
 // @Produce json
 // @Description 新增角色接口
@@ -24,7 +24,7 @@ func CreateSysRole(c *gin.Context) {
 	service.SysRoleService().CreateSysRole(c, dto)
 }
 
-// 根据id查询角色
+// GetSysRoleById 根据id查询角色
 // @Summary 根据id查询角色接口
 // @Produce json
 // @Description 根据id查询角色接口
@@ -37,7 +37,7 @@ func GetSysRoleById(c *gin.Context) {
 	service.SysRoleService().GetSysRoleById(c, Id)
 }
 
-// 修改角色
+// UpdateSysRole 修改角色
 // @Summary 修改角色
 // @Produce json
 // @Description 修改角色
@@ -51,7 +51,7 @@ func UpdateSysRole(c *gin.Context) {
 	service.SysRoleService().UpdateSysRole(c, dto)
 }
 
-// 根据id删除角色
+// DeleteSysRoleById 根据id删除角色
 // @Summary 根据id删除角色接口
 // @Produce json
 // @Description 根据id删除角色接口
@@ -65,7 +65,7 @@ func DeleteSysRoleById(c *gin.Context) {
 	service.SysRoleService().DeleteSysRoleById(c, dto)
 }
 
-// 角色状态启用/停用
+// UpdateSysRoleStatus 角色状态启用/停用
 // @Summary 角色状态启用/停用接口
 // @Produce json
 // @Description 角色状态启用/停用接口
@@ -79,7 +79,7 @@ func UpdateSysRoleStatus(c *gin.Context) {
 	service.SysRoleService().UpdateSysRoleStatus(c, dto)
 }
 
-// 分页查询角色列表
+// GetSysRoleList 分页查询角色列表
 // @Summary 分页查询角色列表接口
 // @Produce json
 // @Description 分页查询角色列表接口
@@ -102,7 +102,7 @@ func GetSysRoleList(c *gin.Context) {
 	service.SysRoleService().GetSysRoleList(c, PageNum, PageSize, RoleName, Status, BeginTime, EndTime)
 }
 
-// 角色下拉列表
+// QuerySysRoleVoList 角色下拉列表
 // @Summary 角色下拉列表
 // @Produce json
 // @Description 角色下拉列表
@@ -113,7 +113,7 @@ func QuerySysRoleVoList(c *gin.Context) {
 	service.SysRoleService().QuerySysRoleVoList(c)
 }
 
-// 根据角色id查询菜单数据
+// QueryRoleMenuIdList 根据角色id查询菜单数据
 // @Summary 根据角色id查询菜单数据接口
 // @Produce json
 // @Description 根据角色id查询菜单数据接口

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 单图片上传
+// Upload 单图片上传
 // @Summary 单图片上传接口
 // @Description 单图片上传接口
 // @Produce json
