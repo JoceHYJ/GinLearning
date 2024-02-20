@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary 验证码接口
+// Captcha @Summary 验证码接口
 // @Produce json
 // @Description 验证码接口
 // @Success 200 {object} result.Result
