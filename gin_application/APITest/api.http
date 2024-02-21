@@ -1,0 +1,27 @@
+### 注册接口
+POST {{host}}api/auth/register
+Content-Type: application/json
+
+{
+  "Name": "gin",
+  "Telephone": "18818268394",
+  "Password": "123456"
+}
+
+### 登陆接口
+POST {{host}}api/auth/login
+Content-Type: application/json
+
+{
+  "Name": "gin",
+  "Telephone": "18818268394",
+  "Password": "123456"
+}
+
+> {%
+    client.global.set("auth_token", response.body.data.token);
+%}
+
+### 信息显示接口
+GET {{host}}api/auth/info
+Authorization: {{authorization}}:{{auth_token}}
