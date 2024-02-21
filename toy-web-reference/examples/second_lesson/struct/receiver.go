@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
 
@@ -41,3 +43,5 @@ func (u User) ChangeName(newName string) {
 func (u *User) ChangeAge(newAge int) {
 	u.Age = newAge
 }
+
+// 遇事不决用指针
