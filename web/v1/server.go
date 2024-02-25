@@ -43,7 +43,7 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 	// 1.Context 构建
 	// 2.路由匹配
 	// 3.执行业务逻辑
-	ctx := &v1.Context{
+	ctx := &Context{
 		Resp: writer,
 		Req:  request,
 	}
@@ -51,7 +51,7 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 	panic("implement me")
 }
 
-func (h *HTTPServer) serve(ctx *v1.Context) {
+func (h *HTTPServer) serve(ctx *Context) {
 	// 查找路由, 并执行命中的业务逻辑
 
 }
