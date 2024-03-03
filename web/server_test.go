@@ -14,7 +14,7 @@ func TestServer(t *testing.T) {
 	//var h Server = &HTTPServer{} ---> 接口没有 Get 方法
 	h := &HTTPServer{}
 
-	h.AddRoute(http.MethodGet, "/user", func(ctx Context) {
+	h.addRoute(http.MethodGet, "/user", func(ctx Context) {
 		fmt.Println("处理第一件事")
 		fmt.Println("处理第二件事")
 	})
@@ -27,7 +27,7 @@ func TestServer(t *testing.T) {
 	}
 
 	// 用户可以自己管理多个 handleFunc, 没必要提供多个
-	h.AddRoute(http.MethodGet, "/user", func(ctx Context) {
+	h.addRoute(http.MethodGet, "/user", func(ctx Context) {
 		handler1(ctx)
 		handler2(ctx)
 	})
@@ -36,9 +36,9 @@ func TestServer(t *testing.T) {
 
 	})
 
-	//h.AddRoute1(http.MethodGet, "/user", handler1, handler2)
+	//h.addRoute1(http.MethodGet, "/user", handler1, handler2)
 
-	//h.AddRoute1(http.MethodGet, "/user", func(ctx Context) {
+	//h.addRoute1(http.MethodGet, "/user", func(ctx Context) {
 	//	fmt.Println("处理第一件事")
 	//}, func(ctx Context) {
 	//	fmt.Println("处理第二件事")
