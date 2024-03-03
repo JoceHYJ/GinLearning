@@ -30,7 +30,7 @@ func newRouter() *router {
 	}
 }
 
-// AddRoute 添加路由的方法
+// addRoute 添加路由的方法
 func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 	// 对 path 加限制 --> 只支持 /user/home 这种格式
 	if path == "" {
@@ -75,8 +75,8 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 		}
 		// 递归寻找位置 --> children
 		// 如果中途有节点不存在则创建
-		children := root.childOrCreate(seg)
-		root = children
+		child := root.childOrCreate(seg)
+		root = child
 	}
 	// 避免子节点路径重复注册
 	if root.handler != nil {
@@ -84,6 +84,31 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 	}
 	// 把 handler 挂载到 root 上(赋值)
 	root.handler = handleFunc
+}
+
+// findRoute 查找路由的方法
+func (r *router) findRoute(method, path string) (*node, bool) {
+	// 沿着树进行 DFS
+	root, ok := r.trees[method]
+	if !ok {
+		return nil, false
+	}
+	if path == "/" {
+		return root, true
+	}
+	// 把前置和后置的 / 都去掉
+	path = strings.Trim(path, "/")
+	// 按照 / 切割 path
+	segs := strings.Split(path, "/")
+	for _, seg := range segs {
+		child, found := root.childOf(seg)
+		if !found {
+			return nil, false
+		}
+		root = child
+	}
+	return root, true // 返回找到的节点 ---> 但是不能返回用户是否注册了 handler
+	//return root, root.handler != nil // 返回用户是否注册了 handler
 }
 
 // childOrCreate 用于查找或创建节点的子节点
@@ -100,6 +125,15 @@ func (n *node) childOrCreate(seg string) *node {
 		n.children[seg] = res
 	}
 	return res
+}
+
+// childOf 用于查找节点
+func (n *node) childOf(path string) (*node, bool) {
+	if n.children == nil {
+		return nil, false
+	}
+	child, ok := n.children[path]
+	return child, ok
 }
 
 type node struct {

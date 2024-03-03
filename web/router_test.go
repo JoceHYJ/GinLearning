@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// TestRouter_addRoute() 测试路由树
+// TestRouter_addRoute() 测试注册路由
 func TestRouter_addRoute(t *testing.T) {
 	// 1.构造路由树
 	// 2.验证路由树
@@ -145,6 +145,118 @@ func TestRouter_addRoute(t *testing.T) {
 	assert.Panicsf(t, func() {
 		r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
 	}, "web: 路由冲突, 重复注册 [/a/b/c] ")
+
+}
+
+// TestRouter_findRoute() 测试查找路由
+func TestRouter_findRoute(t *testing.T) {
+	testRoute := []struct {
+		method string
+		path   string
+	}{
+		// 测试用例
+		// 注册路由
+		{
+			method: http.MethodDelete,
+			path:   "/",
+		},
+		// 测试 GET 方法
+		{ // 根节点需要特殊处理
+			method: http.MethodGet,
+			path:   "/",
+		},
+		{
+			method: http.MethodGet,
+			path:   "/user",
+		},
+		{
+			method: http.MethodGet,
+			path:   "/user/home",
+		},
+		{
+			method: http.MethodGet,
+			path:   "/order/detail", // 没有注册 handler 的节点 --> order
+		},
+
+		// 测试 POST 方法
+		{
+			method: http.MethodPost,
+			path:   "/order/create",
+		},
+		{
+			method: http.MethodPost,
+			path:   "/login",
+		},
+	}
+
+	r := newRouter()
+	var mockHandler HandleFunc = func(ctx Context) {}
+	for _, route := range testRoute {
+		r.addRoute(route.method, route.path, mockHandler)
+	}
+
+	testCases := []struct {
+		name      string
+		method    string
+		path      string
+		wantFound bool
+		wantNode  *node
+	}{
+		{ // 方法不存在
+			name:   "method not found",
+			method: http.MethodOptions,
+			path:   "/order/detail",
+			//wantFound: false,
+		},
+		{ // 完全命中
+			name:      "order detail",
+			method:    http.MethodGet,
+			path:      "/order/detail",
+			wantFound: true,
+			wantNode: &node{
+				handler: mockHandler,
+				path:    "detail",
+			},
+		},
+		{ // 命中了, 但是没有 handler
+			name:      "order",
+			method:    http.MethodGet,
+			path:      "/order",
+			wantFound: true,
+			wantNode: &node{
+				//handler: mockHandler,
+				path: "order",
+				children: map[string]*node{
+					"detail": {
+						handler: mockHandler,
+						path:    "detail",
+					},
+				},
+			},
+		},
+		{ // 根节点
+			name:      "root",
+			method:    http.MethodDelete,
+			path:      "/",
+			wantFound: true,
+			wantNode: &node{
+				path:    "/",
+				handler: mockHandler,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			n, found := r.findRoute(tc.method, tc.path)
+			assert.Equal(t, tc.wantFound, found)
+			if !found {
+				return
+			}
+			msg, ok := tc.wantNode.equal(n)
+			assert.True(t, ok, msg)
+		})
+	}
 
 }
 
