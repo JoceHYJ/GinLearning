@@ -30,15 +30,35 @@ func TestRouter_AddRoute(t *testing.T) {
 	}
 
 	// 3.断言两者相等
+	//wantRouter := &router{
+	//	trees: map[string]*node{
+	//		http.MethodGet: &node{
+	//			path: "/",
+	//			children: map[string]*node{
+	//				"user": &node{
+	//					path: "user",
+	//					children: map[string]*node{
+	//						"home": &node{
+	//							path:     "home",
+	//							children: map[string]*node{},
+	//							handler:  mockHandler,
+	//						},
+	//					},
+	//				},
+	//			},
+	//		},
+	//	},
+	//}
+
 	wantRouter := &router{
 		trees: map[string]*node{
-			http.MethodGet: &node{
+			http.MethodGet: {
 				path: "/",
 				children: map[string]*node{
-					"user": &node{
+					"user": {
 						path: "user",
 						children: map[string]*node{
-							"home": &node{
+							"home": {
 								path:     "home",
 								children: map[string]*node{},
 								handler:  mockHandler,
@@ -93,7 +113,6 @@ func (n *node) equal(y *node) (string, bool) {
 	// 递归比较子节点
 	for path, c := range n.children {
 		dst, ok := y.children[path]
-		// TODO: ok? !ok?
 		if !ok {
 			return fmt.Sprintf("子节点 %s 不存在", path), false
 		}
