@@ -160,29 +160,13 @@ func TestRouter_addRoute(t *testing.T) {
 			},
 			wantErr: "web: 路由冲突, 重复注册 [/] ",
 		},
-		// TODO: 子节点重复注册
 		//{
 		//	name: "子节点重复注册",
 		//	fields: fields{
 		//		trees: map[string]*node{
 		//			http.MethodGet: {
-		//				path: "/",
-		//				children: map[string]*node{
-		//					"a": {
-		//						path: "a",
-		//						children: map[string]*node{
-		//							"b": {
-		//								path: "b",
-		//								children: map[string]*node{
-		//									"c": {
-		//										path:    "c",
-		//										handler: mockHandler,
-		//									},
-		//								},
-		//							},
-		//						},
-		//					},
-		//				},
+		//				path:    "/a/b/c",
+		//				handler: mockHandler,
 		//			},
 		//		},
 		//	},
@@ -203,6 +187,15 @@ func TestRouter_addRoute(t *testing.T) {
 			})
 		})
 	}
+
+	// 子节点重复注册
+	t.Run("子节点重复注册", func(t *testing.T) {
+		r = newRouter()
+		r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
+		assert.Panicsf(t, func() {
+			r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
+		}, "web: 路由冲突, 重复注册 [/a/b/c] ")
+	})
 }
 
 // TestRouter_findRoute() 测试查找路由
