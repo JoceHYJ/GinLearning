@@ -133,12 +133,18 @@ func (n *node) childOrCreate(seg string) *node {
 	return res
 }
 
-// childOf 用于查找节点
+// childOf 用于查找子节点
+// 优先考虑静态匹配
+// 匹配失败则尝试通配符匹配
 func (n *node) childOf(path string) (*node, bool) {
 	if n.children == nil {
-		return nil, false
+		//return nil, false
+		return n.starChild, n.starChild != nil
 	}
 	child, ok := n.children[path]
+	if !ok {
+		return n.starChild, n.starChild != nil
+	}
 	return child, ok
 }
 
