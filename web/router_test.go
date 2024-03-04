@@ -29,20 +29,20 @@ func TestRouter_addRoute(t *testing.T) {
 		name       string
 		fields     fields
 		args       args
-		wantRouter *router
+		wantRouter router
 	}{
-		// 测试 GET 方法
+		// 1.全静态匹配
 		{ // 根节点需要特殊处理
 			name:       "GET /",
 			fields:     fields{trees: make(map[string]*node)},
 			args:       args{method: http.MethodGet, path: "/", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}}},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}}},
 		},
 		{
 			name:   "GET /user",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodGet, path: "/user", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
 				"user": {path: "user", handler: mockHandler},
 			}}}},
 		},
@@ -50,7 +50,7 @@ func TestRouter_addRoute(t *testing.T) {
 			name:   "GET /user/home",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodGet, path: "/user/home", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
 				"user": {path: "user", children: map[string]*node{"home": {path: "home", handler: mockHandler}}},
 			}}}},
 		},
@@ -58,7 +58,7 @@ func TestRouter_addRoute(t *testing.T) {
 			name:   "GET /order/detail",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodGet, path: "/order/detail", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
 				"order": {path: "order", children: map[string]*node{"detail": {path: "detail", handler: mockHandler}}},
 			}}}},
 		},
@@ -67,7 +67,7 @@ func TestRouter_addRoute(t *testing.T) {
 			name:   "POST /order/create",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodPost, path: "/order/create", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+			wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
 				"order": {path: "order", children: map[string]*node{"create": {path: "create", handler: mockHandler}}},
 			}}}},
 		},
@@ -75,7 +75,7 @@ func TestRouter_addRoute(t *testing.T) {
 			name:   "POST /login",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodPost, path: "/login", handleFunc: mockHandler},
-			wantRouter: &router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+			wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
 				"login": {path: "login", handler: mockHandler},
 			}}}},
 		},
@@ -83,6 +83,48 @@ func TestRouter_addRoute(t *testing.T) {
 		//	method: http.MethodPost,
 		//	path:   "login",
 		//}
+
+		// 2.通配符匹配
+		{
+			name:   "GET /order/*",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/order/*", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"order": {path: "order", starChild: &node{path: "*", handler: mockHandler}},
+			}}}},
+		},
+		{
+			name:   "GET /*",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/*", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{
+				path: "*", handler: mockHandler,
+			}}}},
+		},
+		{
+			name:   "GET /*/*",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/*/*", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", starChild: &node{
+				path: "*", handler: mockHandler,
+			}}}}},
+		},
+		{
+			name:   "GET /*/abc",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/*/abc", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
+				"abc": {path: "abc", handler: mockHandler},
+			}}}}},
+		},
+		{
+			name:   "GET /*/abc/*",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/*/abc/*", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
+				"abc": {path: "abc", starChild: &node{path: "*", handler: mockHandler}},
+			}}}}},
+		},
 	}
 
 	for _, tt := range trueTests {
@@ -108,6 +150,7 @@ func TestRouter_addRoute(t *testing.T) {
 		//wantRouter router
 		wantErr string
 	}{
+		// 1.全静态匹配
 		{
 			name:   "空字符串",
 			fields: fields{trees: make(map[string]*node)},
@@ -158,25 +201,25 @@ func TestRouter_addRoute(t *testing.T) {
 				path:       "/",
 				handleFunc: mockHandler,
 			},
-			wantErr: "web: 路由冲突, 重复注册 [/] ",
+			wantErr: "web: 路由冲突, 重复注册 [/]",
 		},
-		//{
-		//	name: "子节点重复注册",
-		//	fields: fields{
-		//		trees: map[string]*node{
-		//			http.MethodGet: {
-		//				path:    "/a/b/c",
-		//				handler: mockHandler,
-		//			},
-		//		},
-		//	},
-		//	args: args{
-		//		method:     http.MethodGet,
-		//		path:       "/a/b/c",
-		//		handleFunc: mockHandler,
-		//	},
-		//	wantErr: "web: 路由冲突, 重复注册 [/a/b/c] ",
-		//},
+		{
+			name: "子节点重复注册",
+			fields: fields{
+				trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+					"a": {path: "a", children: map[string]*node{
+						"b": {path: "b", children: map[string]*node{
+							"c": {path: "c", handler: mockHandler},
+						}}}},
+				}}},
+			},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/c",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 路由冲突, 重复注册 [/a/b/c]",
+		},
 	}
 
 	for _, ft := range falseTests {
@@ -187,15 +230,6 @@ func TestRouter_addRoute(t *testing.T) {
 			})
 		})
 	}
-
-	// 子节点重复注册
-	t.Run("子节点重复注册", func(t *testing.T) {
-		r = newRouter()
-		r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
-		assert.Panicsf(t, func() {
-			r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
-		}, "web: 路由冲突, 重复注册 [/a/b/c] ")
-	})
 }
 
 // TestRouter_findRoute() 测试查找路由
@@ -215,6 +249,7 @@ func TestRouter_findRoute(t *testing.T) {
 		path   string
 	}{
 		// 测试用例
+		// 1.全静态匹配
 		// 注册路由
 		{
 			method: http.MethodDelete,
@@ -264,6 +299,7 @@ func TestRouter_findRoute(t *testing.T) {
 		//wantMatchInfo *matchInfo
 		wantFound bool
 	}{
+		// 1.全静态匹配
 		{ // 方法不存在
 			name: "method not found",
 			args: args{method: http.MethodOptions, path: "/order/detail"},
@@ -342,6 +378,13 @@ func (n *node) equal(y *node) (string, bool) {
 	}
 	if len(n.children) != len(y.children) {
 		return fmt.Sprintf("子节点数量不匹配"), false
+	}
+
+	if n.starChild != nil {
+		msg, ok := n.starChild.equal(y.starChild)
+		if !ok {
+			return msg, ok
+		}
 	}
 
 	// 比较 handler --> 利用反射

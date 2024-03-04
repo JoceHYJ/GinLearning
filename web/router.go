@@ -59,7 +59,7 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 	if path == "/" {
 		// 避免根节点路由重复注册
 		if root.handler != nil {
-			panic("web: 路由冲突, 重复注册 [/] ")
+			panic("web: 路由冲突, 重复注册 [/]")
 		}
 		root.handler = handleFunc
 		return
@@ -113,6 +113,12 @@ func (r *router) findRoute(method, path string) (*node, bool) {
 
 // childOrCreate 用于查找或创建节点的子节点
 func (n *node) childOrCreate(seg string) *node {
+	if seg == "*" {
+		n.starChild = &node{
+			path: seg,
+		}
+		return n.starChild
+	}
 	if n.children == nil {
 		n.children = map[string]*node{}
 	}
@@ -139,9 +145,13 @@ func (n *node) childOf(path string) (*node, bool) {
 type node struct {
 	path string
 
+	// 静态匹配的节点
 	//children []*node
 	// 子 path 到子节点的映射
 	children map[string]*node
+
+	// 加上通配符匹配节点
+	starChild *node
 
 	// 缺少代表用户注册的业务逻辑
 	handler HandleFunc
