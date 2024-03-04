@@ -200,6 +200,16 @@ func TestRouter_addRoute(t *testing.T) {
 
 // TestRouter_findRoute() 测试查找路由
 func TestRouter_findRoute(t *testing.T) {
+
+	type fields struct {
+		trees map[string]*node
+	}
+
+	type args struct {
+		method string
+		path   string
+	}
+
 	testRoute := []struct {
 		method string
 		path   string
@@ -239,29 +249,29 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 	}
 
+	mockHandler := func(ctx Context) {}
+
 	r := newRouter()
-	var mockHandler HandleFunc = func(ctx Context) {}
 	for _, route := range testRoute {
 		r.addRoute(route.method, route.path, mockHandler)
 	}
 
-	testCases := []struct {
-		name      string
-		method    string
-		path      string
+	test := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantNode *node
+		//wantMatchInfo *matchInfo
 		wantFound bool
-		wantNode  *node
 	}{
 		{ // 方法不存在
-			name:   "method not found",
-			method: http.MethodOptions,
-			path:   "/order/detail",
+			name: "method not found",
+			args: args{method: http.MethodOptions, path: "/order/detail"},
 			//wantFound: false,
 		},
 		{ // 完全命中
 			name:      "order detail",
-			method:    http.MethodGet,
-			path:      "/order/detail",
+			args:      args{method: http.MethodGet, path: "/order/detail"},
 			wantFound: true,
 			wantNode: &node{
 				handler: mockHandler,
@@ -270,8 +280,7 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 		{ // 命中了, 但是没有 handler
 			name:      "order",
-			method:    http.MethodGet,
-			path:      "/order",
+			args:      args{method: http.MethodGet, path: "/order"},
 			wantFound: true,
 			wantNode: &node{
 				//handler: mockHandler,
@@ -286,24 +295,23 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 		{ // 根节点
 			name:      "root",
-			method:    http.MethodDelete,
-			path:      "/",
+			args:      args{method: http.MethodDelete, path: "/"},
 			wantFound: true,
 			wantNode: &node{
-				path:    "/",
 				handler: mockHandler,
+				path:    "/",
 			},
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			n, found := r.findRoute(tc.method, tc.path)
-			assert.Equal(t, tc.wantFound, found)
+	for _, tt := range test {
+		t.Run(tt.name, func(t *testing.T) {
+			n, found := r.findRoute(tt.args.method, tt.args.path)
+			assert.Equal(t, tt.wantFound, found)
 			if !found {
 				return
 			}
-			msg, ok := tc.wantNode.equal(n)
+			msg, ok := tt.wantNode.equal(n)
 			assert.True(t, ok, msg)
 		})
 	}
