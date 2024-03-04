@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type HandleFunc func(ctx Context)
+type HandleFunc func(ctx *Context)
 
 // 确保一定实现了 Server 接口
 var _ Server = &HTTPServer{}
@@ -27,8 +27,8 @@ type Server interface {
 
 type HTTPServer struct {
 	// addr string 创建的时候传递, 而不是 Start 接受，都是可以的
-	//router
-	*router
+	router
+	//*router
 	// r *router
 	// 三种组合方式都是可以的
 }
@@ -49,7 +49,6 @@ func NewHTTPServer() *HTTPServer {
 // ServeHTTP -> HTTPServer 处理请求的入口
 func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// http.MethodPut
-	// TODO implement me
 	// Web 框架代码
 	// 1.Context 构建
 	// 2.路由匹配
@@ -59,12 +58,17 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 		Req:  request,
 	}
 	h.serve(ctx)
-	panic("implement me")
 }
 
 func (h *HTTPServer) serve(ctx *Context) {
 	// 查找路由, 并执行命中的业务逻辑
-
+	n, ok := h.findRoute(ctx.Req.Method, ctx.Req.URL.Path)
+	if !ok || n.handler == nil {
+		ctx.Resp.WriteHeader(http.StatusNotFound)
+		_, _ = ctx.Resp.Write([]byte("404 NOT FOUND"))
+		return
+	}
+	n.handler(ctx)
 }
 
 // addRoute 方法

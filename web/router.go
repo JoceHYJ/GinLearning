@@ -24,8 +24,8 @@ type router struct {
 //}
 
 // newRouter 创建路由的方法
-func newRouter() *router {
-	return &router{
+func newRouter() router {
+	return router{
 		trees: map[string]*node{},
 	}
 }

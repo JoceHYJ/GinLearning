@@ -13,7 +13,7 @@ func TestRouter_addRoute(t *testing.T) {
 	// 1.构造路由树
 	// 2.验证路由树
 
-	mockHandler := func(ctx Context) {}
+	mockHandler := func(ctx *Context) {}
 
 	type fields struct {
 		trees map[string]*node
@@ -87,14 +87,14 @@ func TestRouter_addRoute(t *testing.T) {
 
 	for _, tt := range trueTests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &router{
+			r := router{
 				trees: tt.fields.trees,
 			}
 			r.addRoute(tt.args.method, tt.args.path, tt.args.handleFunc)
 
 			// 不能直接断言, 因为 HandleFunc 不是可比较的类型
 			// assert.Equal(t, wantRouter, r)
-			msg, ok := tt.wantRouter.equal(r)
+			msg, ok := tt.wantRouter.equal(&r)
 			assert.True(t, ok, msg)
 		})
 	}
@@ -249,7 +249,7 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 	}
 
-	mockHandler := func(ctx Context) {}
+	mockHandler := func(ctx *Context) {}
 
 	r := newRouter()
 	for _, route := range testRoute {
