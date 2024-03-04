@@ -12,140 +12,197 @@ import (
 func TestRouter_addRoute(t *testing.T) {
 	// 1.构造路由树
 	// 2.验证路由树
-	testRoutes := []struct {
-		method  string
-		path    string
-		handler HandleFunc
-	}{
-		// 测试用例
 
+	mockHandler := func(ctx Context) {}
+
+	type fields struct {
+		trees map[string]*node
+	}
+
+	type args struct {
+		method     string
+		path       string
+		handleFunc HandleFunc
+	}
+
+	trueTests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantRouter *router
+	}{
 		// 测试 GET 方法
 		{ // 根节点需要特殊处理
-			method: http.MethodGet,
-			path:   "/",
+			name:       "GET /",
+			fields:     fields{trees: make(map[string]*node)},
+			args:       args{method: http.MethodGet, path: "/", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}}},
 		},
 		{
-			method: http.MethodGet,
-			path:   "/user",
+			name:   "GET /user",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/user", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"user": {path: "user", handler: mockHandler},
+			}}}},
 		},
 		{
-			method: http.MethodGet,
-			path:   "/user/home",
+			name:   "GET /user/home",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/user/home", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"user": {path: "user", children: map[string]*node{"home": {path: "home", handler: mockHandler}}},
+			}}}},
 		},
 		{
-			method: http.MethodGet,
-			path:   "/order/detail", // 没有注册 handler 的节点 --> order
+			name:   "GET /order/detail",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/order/detail", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"order": {path: "order", children: map[string]*node{"detail": {path: "detail", handler: mockHandler}}},
+			}}}},
 		},
-
 		// 测试 POST 方法
 		{
-			method: http.MethodPost,
-			path:   "/order/create",
+			name:   "POST /order/create",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodPost, path: "/order/create", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+				"order": {path: "order", children: map[string]*node{"create": {path: "create", handler: mockHandler}}},
+			}}}},
 		},
 		{
-			method: http.MethodPost,
-			path:   "/login",
+			name:   "POST /login",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodPost, path: "/login", handleFunc: mockHandler},
+			wantRouter: &router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+				"login": {path: "login", handler: mockHandler},
+			}}}},
 		},
 		//{ // 不支持前导没有 "/" ---> router 加校验
 		//	method: http.MethodPost,
 		//	path:   "login",
+		//}
+	}
+
+	for _, tt := range trueTests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &router{
+				trees: tt.fields.trees,
+			}
+			r.addRoute(tt.args.method, tt.args.path, tt.args.handleFunc)
+
+			// 不能直接断言, 因为 HandleFunc 不是可比较的类型
+			// assert.Equal(t, wantRouter, r)
+			msg, ok := tt.wantRouter.equal(r)
+			assert.True(t, ok, msg)
+		})
+	}
+
+	// 非法用例
+	r := newRouter()
+	falseTests := []struct {
+		name   string
+		fields fields
+		args   args
+		//wantRouter router
+		wantErr string
+	}{
+		{
+			name:   "空字符串",
+			fields: fields{trees: make(map[string]*node)},
+			args: args{
+				method:     http.MethodGet,
+				path:       "",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web:路径不能为空字符串",
+		},
+		{
+			name:   "前导没有 /",
+			fields: fields{trees: make(map[string]*node)},
+			args: args{
+				method:     http.MethodGet,
+				path:       "a/b/c",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web:路径必须以 / 开头",
+		},
+		{
+			name:   "后缀有 /",
+			fields: fields{trees: make(map[string]*node)},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/c/",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web:路径不能以 / 结尾",
+		},
+		{
+			name:   "路由包含连续的 /",
+			fields: fields{trees: make(map[string]*node)},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a//b/c",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web:路径不能包含连续的 / ",
+		},
+		{
+			name: "根节点重复注册",
+			fields: fields{
+				trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}},
+			},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 路由冲突, 重复注册 [/] ",
+		},
+		// TODO: 子节点重复注册
+		//{
+		//	name: "子节点重复注册",
+		//	fields: fields{
+		//		trees: map[string]*node{
+		//			http.MethodGet: {
+		//				path: "/",
+		//				children: map[string]*node{
+		//					"a": {
+		//						path: "a",
+		//						children: map[string]*node{
+		//							"b": {
+		//								path: "b",
+		//								children: map[string]*node{
+		//									"c": {
+		//										path:    "c",
+		//										handler: mockHandler,
+		//									},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		},
+		//	},
+		//	args: args{
+		//		method:     http.MethodGet,
+		//		path:       "/a/b/c",
+		//		handleFunc: mockHandler,
+		//	},
+		//	wantErr: "web: 路由冲突, 重复注册 [/a/b/c] ",
 		//},
 	}
 
-	var mockHandler HandleFunc = func(ctx Context) {}
-	r := newRouter()
-	for _, route := range testRoutes {
-		r.addRoute(route.method, route.path, mockHandler)
+	for _, ft := range falseTests {
+		t.Run(ft.name, func(t *testing.T) {
+			r.trees = ft.fields.trees
+			assert.PanicsWithValue(t, ft.wantErr, func() {
+				r.addRoute(ft.args.method, ft.args.path, ft.args.handleFunc)
+			})
+		})
 	}
-
-	// 3.断言两者相等
-	wantRouter := &router{
-		trees: map[string]*node{
-			http.MethodGet: &node{
-				path:    "/",
-				handler: mockHandler, // 增加了根节点测试用例，所以添加 handler
-				children: map[string]*node{
-					"user": &node{
-						path:    "user",
-						handler: mockHandler, // 增加了 /user 的测试用例
-						children: map[string]*node{
-							"home": &node{
-								path:     "home",
-								children: map[string]*node{},
-								handler:  mockHandler,
-							},
-						},
-					},
-					"order": &node{
-						path: "order",
-						// 不需要 handler
-						children: map[string]*node{
-							"detail": &node{
-								path:     "detail",
-								children: map[string]*node{},
-								handler:  mockHandler,
-							},
-						},
-					},
-				},
-			},
-			http.MethodPost: &node{
-				path: "/",
-				children: map[string]*node{
-					"order": &node{
-						path: "order",
-						children: map[string]*node{
-							"create": &node{
-								path:     "create",
-								children: map[string]*node{},
-								handler:  mockHandler,
-							},
-						},
-					},
-					"login": &node{
-						path:    "login",
-						handler: mockHandler,
-					},
-				},
-			},
-		},
-	}
-
-	// 不能直接断言, 因为 HandleFunc 不是可比较的类型
-	// assert.Equal(t, wantRouter, r)
-
-	msg, ok := wantRouter.equal(r)
-	assert.True(t, ok, msg)
-
-	// 增加测试用例: path 的格式不符合要求
-	r = newRouter()
-	assert.Panicsf(t, func() {
-		r.addRoute(http.MethodGet, "", mockHandler)
-	}, "web:路径不能为空字符串")
-
-	assert.Panicsf(t, func() {
-		r.addRoute(http.MethodGet, "/a/b/c/", mockHandler)
-	}, "web:路径不能以 / 结尾")
-
-	assert.Panicsf(t, func() {
-		r.addRoute(http.MethodGet, "/a//c", mockHandler)
-	}, "web:路径不能包含连续的 / ")
-
-	// 增加测试用例: 路由重复注册
-	// 根节点路径重复注册
-	r = newRouter()
-	r.addRoute(http.MethodGet, "/", mockHandler)
-	assert.Panicsf(t, func() {
-		r.addRoute(http.MethodGet, "/", mockHandler)
-	}, "web: 路由冲突, 重复注册 [/] ")
-
-	// 子节点路径重复注册
-	r = newRouter()
-	r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
-	assert.Panicsf(t, func() {
-		r.addRoute(http.MethodGet, "/a/b/c", mockHandler)
-	}, "web: 路由冲突, 重复注册 [/a/b/c] ")
-
 }
 
 // TestRouter_findRoute() 测试查找路由
