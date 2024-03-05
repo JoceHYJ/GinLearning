@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -233,141 +232,18 @@ func TestRouter_addRoute(t *testing.T) {
 	}
 }
 
-//// TestRouter_findRoute() 测试查找路由
-//func TestRouter_findRoute(t *testing.T) {
-//
-//	type fields struct {
-//		trees map[string]*node
-//	}
-//
-//	type args struct {
-//		method string
-//		path   string
-//	}
-//
-//	testRoute := []struct {
-//		method string
-//		path   string
-//	}{
-//		// 测试用例
-//		// 1.全静态匹配
-//		// 注册路由
-//		{
-//			method: http.MethodDelete,
-//			path:   "/",
-//		},
-//		// 测试 GET 方法
-//		{ // 根节点需要特殊处理
-//			method: http.MethodGet,
-//			path:   "/",
-//		},
-//		{
-//			method: http.MethodGet,
-//			path:   "/user",
-//		},
-//		{
-//			method: http.MethodGet,
-//			path:   "/user/home",
-//		},
-//		{
-//			method: http.MethodGet,
-//			path:   "/order/detail", // 没有注册 handler 的节点 --> order
-//		},
-//
-//		// 测试 POST 方法
-//		{
-//			method: http.MethodPost,
-//			path:   "/order/create",
-//		},
-//		{
-//			method: http.MethodPost,
-//			path:   "/login",
-//		},
-//	}
-//
-//	mockHandler := func(ctx *Context) {}
-//
-//	r := newRouter()
-//	for _, route := range testRoute {
-//		r.addRoute(route.method, route.path, mockHandler)
-//	}
-//
-//	test := []struct {
-//		name     string
-//		fields   fields
-//		args     args
-//		wantNode *node
-//		//wantMatchInfo *matchInfo
-//		wantFound bool
-//	}{
-//		// 1.全静态匹配
-//		{ // 方法不存在
-//			name: "method not found",
-//			args: args{method: http.MethodOptions, path: "/order/detail"},
-//			//wantFound: false,
-//		},
-//		{ // 完全命中
-//			name:      "order detail",
-//			args:      args{method: http.MethodGet, path: "/order/detail"},
-//			wantFound: true,
-//			wantNode: &node{
-//				handler: mockHandler,
-//				path:    "detail",
-//			},
-//		},
-//		{ // 命中了, 但是没有 handler
-//			name:      "order",
-//			args:      args{method: http.MethodGet, path: "/order"},
-//			wantFound: true,
-//			wantNode: &node{
-//				//handler: mockHandler,
-//				path: "order",
-//				children: map[string]*node{
-//					"detail": {
-//						handler: mockHandler,
-//						path:    "detail",
-//					},
-//				},
-//			},
-//		},
-//		{ // 根节点
-//			name:      "root",
-//			args:      args{method: http.MethodDelete, path: "/"},
-//			wantFound: true,
-//			wantNode: &node{
-//				handler: mockHandler,
-//				path:    "/",
-//			},
-//		},
-//	}
-//
-//	for _, tt := range test {
-//		t.Run(tt.name, func(t *testing.T) {
-//			n, found := r.findRoute(tt.args.method, tt.args.path)
-//			assert.Equal(t, tt.wantFound, found)
-//			if !found {
-//				return
-//			}
-//			msg, ok := tt.wantNode.equal(n)
-//			assert.True(t, ok, msg)
-//		})
-//	}
-//}
-
+// TestRouter_findRoute() 测试查找路由
 func TestRouter_findRoute(t *testing.T) {
-	// 定义 args 结构体
+
+	type fields struct {
+		trees map[string]*node
+	}
+
 	type args struct {
 		method string
 		path   string
 	}
 
-	// 构建 fields 中的路由树
-	mockHandler := func(ctx *Context) {}
-	fields := struct {
-		trees map[string]*node
-	}{
-		trees: make(map[string]*node),
-	}
 	testRoute := []struct {
 		method string
 		path   string
@@ -408,43 +284,16 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 	}
 
-	// 处理路由注册
-	for _, route := range testRoute {
-		// 初始化当前节点
-		currentNode := fields.trees[route.method]
-		if currentNode == nil {
-			// 如果当前节点为空，则创建根节点
-			fields.trees[route.method] = &node{path: "/"}
-			currentNode = fields.trees[route.method]
-		}
+	mockHandler := func(ctx *Context) {}
 
-		// 切分路径
-		pathComponents := strings.Split(route.path, "/")
-		// 如果路径为根节点，则直接设置当前节点的处理器
-		if route.path == "/" {
-			currentNode.handler = mockHandler
-		} else {
-			// 遍历路径组件
-			for _, comp := range pathComponents[1:] {
-				// 初始化子节点映射
-				if currentNode.children == nil {
-					currentNode.children = make(map[string]*node)
-				}
-				// 检查子节点是否存在，不存在则创建
-				if _, exists := currentNode.children[comp]; !exists {
-					currentNode.children[comp] = &node{path: comp}
-				}
-				// 移动到下一个节点
-				currentNode = currentNode.children[comp]
-			}
-			// 设置叶子节点的处理器
-			currentNode.handler = mockHandler
-		}
+	r := newRouter()
+	for _, route := range testRoute {
+		r.addRoute(route.method, route.path, mockHandler)
 	}
 
-	// 定义测试用例
 	test := []struct {
 		name      string
+		fields    fields
 		args      args
 		wantNode  *node
 		wantFound bool
@@ -490,12 +339,8 @@ func TestRouter_findRoute(t *testing.T) {
 		},
 	}
 
-	// 执行测试用例
 	for _, tt := range test {
 		t.Run(tt.name, func(t *testing.T) {
-			r := router{
-				trees: fields.trees,
-			}
 			n, found := r.findRoute(tt.args.method, tt.args.path)
 			assert.Equal(t, tt.wantFound, found)
 			if !found {
