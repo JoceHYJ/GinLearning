@@ -260,27 +260,25 @@ func TestRouter_findRoute(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/",
 		},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/user",
+		//},
 		{
 			method: http.MethodGet,
-			path:   "/user",
+			path:   "/user/*/home",
 		},
-		{
-			method: http.MethodGet,
-			path:   "/user/home",
-		},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/user/home",
+		//},
 		{
 			method: http.MethodGet,
 			path:   "/order/detail", // 没有注册 handler 的节点 --> order
 		},
-
-		// 测试 POST 方法
 		{
-			method: http.MethodPost,
-			path:   "/order/create",
-		},
-		{
-			method: http.MethodPost,
-			path:   "/login",
+			method: http.MethodGet,
+			path:   "/order/*",
 		},
 	}
 
@@ -336,6 +334,29 @@ func TestRouter_findRoute(t *testing.T) {
 				handler: mockHandler,
 				path:    "/",
 			},
+		},
+		// 通配符匹配
+		{ // /order/*
+			name:      "star match",
+			args:      args{method: http.MethodGet, path: "/order/del"},
+			wantFound: true,
+			wantNode: &node{
+				handler: mockHandler,
+				path:    "*",
+			},
+		},
+		{ // /user/*/home
+			name:      "star in middle",
+			args:      args{method: http.MethodGet, path: "/user/tomato/home"},
+			wantFound: true,
+			wantNode: &node{
+				handler: mockHandler,
+				path:    "home",
+			},
+		},
+		{
+			name: "overflow",
+			args: args{method: http.MethodPost, path: "/order/del/sprite"},
 		},
 	}
 
