@@ -55,6 +55,14 @@ func TestRouter_addRoute(t *testing.T) {
 			}}}},
 		},
 		{
+			name:   "GET /order",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/order", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"order": {path: "order", handler: mockHandler},
+			}}}},
+		},
+		{
 			name:   "GET /order/detail",
 			fields: fields{trees: make(map[string]*node)},
 			args:   args{method: http.MethodGet, path: "/order/detail", handleFunc: mockHandler},
@@ -125,6 +133,45 @@ func TestRouter_addRoute(t *testing.T) {
 				"abc": {path: "abc", starChild: &node{path: "*", handler: mockHandler}},
 			}}}}},
 		},
+
+		// 3. 参数路径匹配 eg: /user/:id -> /user/123, id = 123
+		{
+			name:   "GET /order/detail/:id",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/order/detail/:id", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"order": {path: "order", children: map[string]*node{"detail": {path: "detail", paramChild: &node{
+					path: ":id", handler: mockHandler,
+				}}}},
+			}}}},
+		},
+		//{
+		//	name:   "GET /param/:id",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", handler: mockHandler}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /param/:id/detail",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id/detail", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", children: map[string]*node{
+		//			"detail": {path: "detail", handler: mockHandler},
+		//		}}},
+		//	}}}},
+		//},
+		//{ // param, star 同时
+		//	name:   "GET /param/:id/*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", starChild: &node{
+		//			path: "*", handler: mockHandler}},
+		//		}}},
+		//	}}},
 	}
 
 	for _, tt := range trueTests {
@@ -220,6 +267,30 @@ func TestRouter_addRoute(t *testing.T) {
 			},
 			wantErr: "web: 路由冲突, 重复注册 [/a/b/c]",
 		},
+		{
+			name: "不允许同时注册参数路径和通配符匹配,已有通配符匹配",
+			fields: fields{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"a": {path: "a", starChild: &node{path: "*", handler: mockHandler}}},
+			}}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/:id",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册参数路径和通配符匹配, 已有通配符匹配",
+		},
+		{
+			name: "不允许同时注册参数路径和通配符匹配,已有参数路径匹配",
+			fields: fields{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"a": {path: "a", paramChild: &node{path: ":id", handler: mockHandler}}},
+			}}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/*",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册参数路径和通配符匹配, 已有参数路径匹配",
+		},
 	}
 
 	for _, ft := range falseTests {
@@ -280,6 +351,30 @@ func TestRouter_findRoute(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/order/*",
 		},
+		{
+			method: http.MethodPost,
+			path:   "/login",
+		},
+		{
+			method: http.MethodPost,
+			path:   "/login/:username",
+		},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/param",
+		//},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/param/:id",
+		//},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/param/:id/detail",
+		//},
+		//{
+		//	method: http.MethodGet,
+		//	path:   "/param/:id/*",
+		//},
 	}
 
 	mockHandler := func(ctx *Context) {}
@@ -358,6 +453,24 @@ func TestRouter_findRoute(t *testing.T) {
 			name: "overflow",
 			args: args{method: http.MethodPost, path: "/order/del/sprite"},
 		},
+		{ // /login/:username
+			name:      "login username",
+			args:      args{method: http.MethodPost, path: "/login/tomato"},
+			wantFound: true,
+			wantNode: &node{
+				handler: mockHandler,
+				path:    ":username",
+			},
+		},
+		//{ // /param/:id
+		//	name:      "param id",
+		//	args:      args{method: http.MethodGet, path: "/param/0112"},
+		//	wantFound: true,
+		//	wantNode: &node{
+		//		handler: mockHandler,
+		//		path:    ":id",
+		//	},
+		//},
 	}
 
 	for _, tt := range test {
@@ -401,6 +514,13 @@ func (n *node) equal(y *node) (string, bool) {
 
 	if n.starChild != nil {
 		msg, ok := n.starChild.equal(y.starChild)
+		if !ok {
+			return msg, ok
+		}
+	}
+
+	if n.paramChild != nil {
+		msg, ok := n.paramChild.equal(y.paramChild)
 		if !ok {
 			return msg, ok
 		}

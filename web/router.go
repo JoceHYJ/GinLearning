@@ -113,12 +113,39 @@ func (r *router) findRoute(method, path string) (*node, bool) {
 
 // childOrCreate 用于查找或创建节点的子节点
 func (n *node) childOrCreate(seg string) *node {
+
+	// 参数路径匹配
+	if seg[0] == ':' {
+		if n.starChild != nil {
+			panic("web: 不允许同时注册参数路径和通配符匹配, 已有通配符匹配")
+		}
+		n.paramChild = &node{
+			path: seg,
+		}
+		return n.paramChild
+	}
+
+	//// 正则表达式匹配
+	//if seg[0] == '*' {
+	//	if n.starChild == nil {
+	//		n.starChild = &node{
+	//			path: seg,
+	//		}
+	//	}
+	//	return n.starChild
+	//}
+
+	// 通配符匹配
 	if seg == "*" {
+		if n.paramChild != nil {
+			panic("web: 不允许同时注册参数路径和通配符匹配, 已有参数路径匹配")
+		}
 		n.starChild = &node{
 			path: seg,
 		}
 		return n.starChild
 	}
+
 	if n.children == nil {
 		n.children = map[string]*node{}
 	}
@@ -136,13 +163,20 @@ func (n *node) childOrCreate(seg string) *node {
 // childOf 用于查找子节点
 // 优先考虑静态匹配
 // 匹配失败则尝试通配符匹配
+// 参数路径匹配
 func (n *node) childOf(path string) (*node, bool) {
 	if n.children == nil {
 		//return nil, false
+		if n.paramChild != nil {
+			return n.paramChild, true
+		}
 		return n.starChild, n.starChild != nil
 	}
 	child, ok := n.children[path]
 	if !ok {
+		if n.paramChild != nil {
+			return n.paramChild, true
+		}
 		return n.starChild, n.starChild != nil
 	}
 	return child, ok
@@ -156,8 +190,11 @@ type node struct {
 	// 子 path 到子节点的映射
 	children map[string]*node
 
-	// 加上通配符匹配节点
+	// 通配符匹配节点
 	starChild *node
+
+	// 参数路径匹配节点
+	paramChild *node
 
 	// 缺少代表用户注册的业务逻辑
 	handler HandleFunc
