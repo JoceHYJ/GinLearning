@@ -140,16 +140,6 @@ func (n *node) childOrCreate(seg string) *node {
 		return n.paramChild
 	}
 
-	//// 正则表达式匹配
-	//if seg[0] == '*' {
-	//	if n.starChild == nil {
-	//		n.starChild = &node{
-	//			path: seg,
-	//		}
-	//	}
-	//	return n.starChild
-	//}
-
 	// 通配符匹配
 	if seg == "*" {
 		if n.paramChild != nil {
