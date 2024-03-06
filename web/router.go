@@ -87,27 +87,42 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 }
 
 // findRoute 查找路由的方法
-func (r *router) findRoute(method, path string) (*node, bool) {
+func (r *router) findRoute(method, path string) (*matchInfo, bool) {
 	// 沿着树进行 DFS
 	root, ok := r.trees[method]
 	if !ok {
 		return nil, false
 	}
 	if path == "/" {
-		return root, true
+		return &matchInfo{
+			n: root,
+		}, true
 	}
 	// 把前置和后置的 / 都去掉
 	path = strings.Trim(path, "/")
 	// 按照 / 切割 path
 	segs := strings.Split(path, "/")
+	//pathParams := make(map[string]string)
+	var pathParams map[string]string
 	for _, seg := range segs {
-		child, found := root.childOf(seg)
+		child, paramChild, found := root.childOf(seg)
 		if !found {
 			return nil, false
 		}
 		root = child
+		// 命中了路径参数
+		if paramChild {
+			if pathParams == nil {
+				pathParams = make(map[string]string)
+			}
+			// path 是 :id 的形式
+			pathParams[child.path[1:]] = seg
+		}
 	}
-	return root, true // 返回找到的节点 ---> 但是不能返回用户是否注册了 handler
+	return &matchInfo{
+		n:          root,
+		pathParams: pathParams,
+	}, true // 返回找到的节点 ---> 但是不能返回用户是否注册了 handler
 	//return root, root.handler != nil // 返回用户是否注册了 handler
 }
 
@@ -164,22 +179,23 @@ func (n *node) childOrCreate(seg string) *node {
 // 优先考虑静态匹配
 // 匹配失败则尝试通配符匹配
 // 参数路径匹配
-func (n *node) childOf(path string) (*node, bool) {
+// 返回值参数: 第一个是子节点，第二个标记是否是路径参数，第三个标记是否命中
+func (n *node) childOf(path string) (*node, bool, bool) {
 	if n.children == nil {
 		//return nil, false
 		if n.paramChild != nil {
-			return n.paramChild, true
+			return n.paramChild, true, true
 		}
-		return n.starChild, n.starChild != nil
+		return n.starChild, false, n.starChild != nil
 	}
 	child, ok := n.children[path]
 	if !ok {
 		if n.paramChild != nil {
-			return n.paramChild, true
+			return n.paramChild, true, true
 		}
-		return n.starChild, n.starChild != nil
+		return n.starChild, false, n.starChild != nil
 	}
-	return child, ok
+	return child, false, ok
 }
 
 type node struct {
@@ -198,4 +214,10 @@ type node struct {
 
 	// 缺少代表用户注册的业务逻辑
 	handler HandleFunc
+}
+
+// 参数匹配信息
+type matchInfo struct {
+	n          *node
+	pathParams map[string]string
 }

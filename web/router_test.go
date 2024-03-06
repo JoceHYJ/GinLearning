@@ -385,68 +385,74 @@ func TestRouter_findRoute(t *testing.T) {
 	}
 
 	test := []struct {
-		name      string
-		fields    fields
-		args      args
-		wantNode  *node
-		wantFound bool
+		name   string
+		fields fields
+		args   args
+		//wantNode  *node
+		wantMatchInfo *matchInfo
+		wantFound     bool
 	}{
 		// 1.全静态匹配
 		{ // 方法不存在
-			name: "method not found",
-			args: args{method: http.MethodOptions, path: "/order/detail"},
-			//wantFound: false,
+			name:      "method not found",
+			args:      args{method: http.MethodOptions, path: "/order/detail"},
+			wantFound: false,
+		},
+		{
+			name:      "path not found",
+			args:      args{method: http.MethodGet, path: "/abc"},
+			wantFound: false,
 		},
 		{ // 完全命中
 			name:      "order detail",
 			args:      args{method: http.MethodGet, path: "/order/detail"},
 			wantFound: true,
-			wantNode: &node{
+			wantMatchInfo: &matchInfo{n: &node{
 				handler: mockHandler,
 				path:    "detail",
-			},
+			}},
 		},
 		{ // 命中了, 但是没有 handler
 			name:      "order",
 			args:      args{method: http.MethodGet, path: "/order"},
 			wantFound: true,
-			wantNode: &node{
-				//handler: mockHandler,
+			wantMatchInfo: &matchInfo{n: &node{
 				path: "order",
 				children: map[string]*node{
 					"detail": {
 						handler: mockHandler,
 						path:    "detail",
-					},
-				},
+					}}},
 			},
 		},
 		{ // 根节点
 			name:      "root",
 			args:      args{method: http.MethodDelete, path: "/"},
 			wantFound: true,
-			wantNode: &node{
+			wantMatchInfo: &matchInfo{n: &node{
 				handler: mockHandler,
 				path:    "/",
-			},
+			}},
 		},
 		// 通配符匹配
 		{ // /order/*
 			name:      "star match",
 			args:      args{method: http.MethodGet, path: "/order/del"},
 			wantFound: true,
-			wantNode: &node{
+			wantMatchInfo: &matchInfo{n: &node{
 				handler: mockHandler,
 				path:    "*",
-			},
+			}},
 		},
 		{ // /user/*/home
 			name:      "star in middle",
 			args:      args{method: http.MethodGet, path: "/user/tomato/home"},
 			wantFound: true,
-			wantNode: &node{
-				handler: mockHandler,
-				path:    "home",
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					handler: mockHandler,
+					path:    "home",
+				},
 			},
 		},
 		{
@@ -457,9 +463,14 @@ func TestRouter_findRoute(t *testing.T) {
 			name:      "login username",
 			args:      args{method: http.MethodPost, path: "/login/tomato"},
 			wantFound: true,
-			wantNode: &node{
-				handler: mockHandler,
-				path:    ":username",
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					handler: mockHandler,
+					path:    ":username",
+				},
+				pathParams: map[string]string{
+					"username": "tomato",
+				},
 			},
 		},
 		//{ // /param/:id
@@ -475,12 +486,14 @@ func TestRouter_findRoute(t *testing.T) {
 
 	for _, tt := range test {
 		t.Run(tt.name, func(t *testing.T) {
-			n, found := r.findRoute(tt.args.method, tt.args.path)
+			info, found := r.findRoute(tt.args.method, tt.args.path)
 			assert.Equal(t, tt.wantFound, found)
 			if !found {
 				return
 			}
-			msg, ok := tt.wantNode.equal(n)
+			//msg, ok := tt.wantNode.equal(n)
+			assert.Equal(t, tt.wantMatchInfo.pathParams, info.pathParams)
+			msg, ok := tt.wantMatchInfo.n.equal(info.n)
 			assert.True(t, ok, msg)
 		})
 	}
