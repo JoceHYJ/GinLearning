@@ -75,8 +75,9 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 		}
 		// 递归寻找位置 --> children
 		// 如果中途有节点不存在则创建
-		child := root.childOrCreate(seg)
-		root = child
+		//child := root.childOrCreate(seg)
+		//root = child
+		root = root.childOrCreate(seg)
 	}
 	// 避免子节点路径重复注册
 	if root.handler != nil {
@@ -128,27 +129,36 @@ func (r *router) findRoute(method, path string) (*matchInfo, bool) {
 
 // childOrCreate 用于查找或创建节点的子节点
 func (n *node) childOrCreate(seg string) *node {
+	// 通配符匹配
+	if seg == "*" {
+		if n.paramChild != nil {
+			panic("web: 不允许同时注册参数路径和通配符匹配, 已有参数路径匹配")
+		}
+		if n.starChild == nil {
+			n.starChild = &node{
+				path: seg,
+			}
+		}
+		return n.starChild
+	}
 
 	// 参数路径匹配
 	if seg[0] == ':' {
 		if n.starChild != nil {
 			panic("web: 不允许同时注册参数路径和通配符匹配, 已有通配符匹配")
 		}
-		n.paramChild = &node{
-			path: seg,
-		}
-		return n.paramChild
-	}
 
-	// 通配符匹配
-	if seg == "*" {
 		if n.paramChild != nil {
-			panic("web: 不允许同时注册参数路径和通配符匹配, 已有参数路径匹配")
+			if n.paramChild.path != seg {
+				panic(fmt.Sprintf("web: 路由冲突，参数路由冲突，已有 %s，新注册 %s", n.paramChild.path, seg))
+			}
+		} else {
+			n.paramChild = &node{
+				path: seg,
+			}
 		}
-		n.starChild = &node{
-			path: seg,
-		}
-		return n.starChild
+
+		return n.paramChild
 	}
 
 	if n.children == nil {
