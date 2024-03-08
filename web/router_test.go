@@ -545,8 +545,12 @@ func TestRouter_findRoute(t *testing.T) {
 			}
 			//msg, ok := tt.wantNode.equal(n)
 			assert.Equal(t, tt.wantMatchInfo.pathParams, info.pathParams)
-			msg, ok := tt.wantMatchInfo.n.equal(info.n)
-			assert.True(t, ok, msg)
+			//msg, ok := tt.wantMatchInfo.n.equal(info.n)
+			//assert.True(t, ok, msg)
+			n := tt.wantMatchInfo.n
+			wantVal := reflect.ValueOf(info.n.handler)
+			gotVal := reflect.ValueOf(n.handler)
+			assert.Equal(t, wantVal, gotVal)
 		})
 	}
 }
@@ -569,6 +573,7 @@ func (r *router) equal(y *router) (string, bool) {
 	return "", true
 }
 
+// n: want y: got
 func (n *node) equal(y *node) (string, bool) {
 	if n.path != y.path {
 		return fmt.Sprintf("节点路径不匹配"), false
