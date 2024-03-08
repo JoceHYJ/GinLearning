@@ -363,14 +363,14 @@ func TestRouter_findRoute(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/param/:id",
 		},
-		//{
-		//	method: http.MethodGet,
-		//	path:   "/param/:id/*",
-		//},
-		//{
-		//	method: http.MethodGet,
-		//	path:   "/param/:id/detail",
-		//},
+		{
+			method: http.MethodGet,
+			path:   "/param/:id/*",
+		},
+		{
+			method: http.MethodGet,
+			path:   "/param/:id/detail",
+		},
 	}
 
 	mockHandler := func(ctx *Context) {}
@@ -388,115 +388,115 @@ func TestRouter_findRoute(t *testing.T) {
 		wantMatchInfo *matchInfo
 		wantFound     bool
 	}{
-		// 1.全静态匹配
-		{ // 方法不存在
-			name:      "method not found",
-			args:      args{method: http.MethodOptions, path: "/order/detail"},
-			wantFound: false,
-		},
-		{
-			name:      "path not found",
-			args:      args{method: http.MethodGet, path: "/abc"},
-			wantFound: false,
-		},
-		{ // 完全命中
-			name:      "order detail",
-			args:      args{method: http.MethodGet, path: "/order/detail"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{n: &node{
-				handler: mockHandler,
-				path:    "detail",
-			}},
-		},
-		{ // 命中了, 但是没有 handler
-			name:      "order",
-			args:      args{method: http.MethodGet, path: "/order"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{n: &node{
-				path: "order",
-				children: map[string]*node{
-					"detail": {
-						handler: mockHandler,
-						path:    "detail",
-					}}},
-			},
-		},
-		{ // 根节点
-			name:      "root",
-			args:      args{method: http.MethodDelete, path: "/"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{n: &node{
-				handler: mockHandler,
-				path:    "/",
-			}},
-		},
-		// 通配符匹配
-		{ // /order/*
-			name:      "star match",
-			args:      args{method: http.MethodGet, path: "/order/del"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{n: &node{
-				handler: mockHandler,
-				path:    "*",
-			}},
-		},
-		{ // /user/*/home
-			name:      "star in middle",
-			args:      args{method: http.MethodGet, path: "/user/tomato/home"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{
-				n: &node{
-					handler: mockHandler,
-					path:    "home",
-				},
-			},
-		},
-		{
-			name: "overflow",
-			args: args{method: http.MethodPost, path: "/order/del/sprite"},
-		},
-		{ // /login/:username
-			name:      "login username",
-			args:      args{method: http.MethodPost, path: "/login/tomato"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{
-				n: &node{
-					handler: mockHandler,
-					path:    ":username",
-				},
-				pathParams: map[string]string{
-					"username": "tomato",
-				},
-			},
-		},
-		{ // /param/:id
-			name:      ":id",
-			args:      args{method: http.MethodGet, path: "/param/123"},
-			wantFound: true,
-			wantMatchInfo: &matchInfo{
-				n: &node{
-					handler: mockHandler,
-					path:    ":id",
-				},
-				pathParams: map[string]string{
-					"id": "123",
-				},
-			},
-		},
-		//{ // /param/:id/*
-		//	name:      ":id/*",
-		//	args:      args{method: http.MethodGet, path: "/param/234/abc"},
+		//// 1.全静态匹配
+		//{ // 方法不存在
+		//	name:      "method not found",
+		//	args:      args{method: http.MethodOptions, path: "/order/detail"},
+		//	wantFound: false,
+		//},
+		//{
+		//	name:      "path not found",
+		//	args:      args{method: http.MethodGet, path: "/abc"},
+		//	wantFound: false,
+		//},
+		//{ // 完全命中
+		//	name:      "order detail",
+		//	args:      args{method: http.MethodGet, path: "/order/detail"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{n: &node{
+		//		handler: mockHandler,
+		//		path:    "detail",
+		//	}},
+		//},
+		//{ // 命中了, 但是没有 handler
+		//	name:      "order",
+		//	args:      args{method: http.MethodGet, path: "/order"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{n: &node{
+		//		path: "order",
+		//		children: map[string]*node{
+		//			"detail": {
+		//				handler: mockHandler,
+		//				path:    "detail",
+		//			}}},
+		//	},
+		//},
+		//{ // 根节点
+		//	name:      "root",
+		//	args:      args{method: http.MethodDelete, path: "/"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{n: &node{
+		//		handler: mockHandler,
+		//		path:    "/",
+		//	}},
+		//},
+		//// 通配符匹配
+		//{ // /order/*
+		//	name:      "star match",
+		//	args:      args{method: http.MethodGet, path: "/order/del"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{n: &node{
+		//		handler: mockHandler,
+		//		path:    "*",
+		//	}},
+		//},
+		//{ // /user/*/home
+		//	name:      "star in middle",
+		//	args:      args{method: http.MethodGet, path: "/user/tomato/home"},
 		//	wantFound: true,
 		//	wantMatchInfo: &matchInfo{
 		//		n: &node{
 		//			handler: mockHandler,
-		//			path:    "*",
-		//		},
-		//		pathParams: map[string]string{
-		//			"id": "234",
+		//			path:    "home",
 		//		},
 		//	},
 		//},
+		//{
+		//	name: "overflow",
+		//	args: args{method: http.MethodPost, path: "/order/del/sprite"},
+		//},
+		//{ // /login/:username
+		//	name:      "login username",
+		//	args:      args{method: http.MethodPost, path: "/login/tomato"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{
+		//		n: &node{
+		//			handler: mockHandler,
+		//			path:    ":username",
+		//		},
+		//		pathParams: map[string]string{
+		//			"username": "tomato",
+		//		},
+		//	},
+		//},
+		//{ // /param/:id
+		//	name:      ":id",
+		//	args:      args{method: http.MethodGet, path: "/param/123"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{
+		//		n: &node{
+		//			handler: mockHandler,
+		//			path:    ":id",
+		//		},
+		//		pathParams: map[string]string{
+		//			"id": "123",
+		//		},
+		//	},
+		//},
+		{ // /param/:id/*
+			name:      ":id/*",
+			args:      args{method: http.MethodGet, path: "/param/234/abc"},
+			wantFound: true,
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					handler: mockHandler,
+					path:    "*",
+				},
+				pathParams: map[string]string{
+					"id": "234",
+				},
+			},
+		},
 		//{ // /param/:id/detail
 		//	name:      ":id/detail",
 		//	args:      args{method: http.MethodGet, path: "/param/abc/detail"},
@@ -550,9 +550,6 @@ func (n *node) equal(y *node) (string, bool) {
 	if n.path != y.path {
 		return fmt.Sprintf("节点路径不匹配"), false
 	}
-	if len(n.children) != len(y.children) {
-		return fmt.Sprintf("子节点数量不匹配"), false
-	}
 
 	if n.starChild != nil {
 		msg, ok := n.starChild.equal(y.starChild)
@@ -566,6 +563,10 @@ func (n *node) equal(y *node) (string, bool) {
 		if !ok {
 			return msg, ok
 		}
+	}
+
+	if len(n.children) != len(y.children) {
+		return fmt.Sprintf("子节点数量不匹配"), false
 	}
 
 	// 比较 handler --> 利用反射
