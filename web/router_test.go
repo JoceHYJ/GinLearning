@@ -145,33 +145,33 @@ func TestRouter_addRoute(t *testing.T) {
 				}}}},
 			}}}},
 		},
-		//{
-		//	name:   "GET /param/:id",
-		//	fields: fields{trees: make(map[string]*node)},
-		//	args:   args{method: http.MethodGet, path: "/param/:id", handleFunc: mockHandler},
-		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-		//		"param": {path: "param", paramChild: &node{path: ":id", handler: mockHandler}},
-		//	}}}},
-		//},
-		//{
-		//	name:   "GET /param/:id/detail",
-		//	fields: fields{trees: make(map[string]*node)},
-		//	args:   args{method: http.MethodGet, path: "/param/:id/detail", handleFunc: mockHandler},
-		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-		//		"param": {path: "param", paramChild: &node{path: ":id", children: map[string]*node{
-		//			"detail": {path: "detail", handler: mockHandler},
-		//		}}},
-		//	}}}},
-		//},
-		//{ // param, star 同时
-		//	name:   "GET /param/:id/*",
-		//	fields: fields{trees: make(map[string]*node)},
-		//	args:   args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
-		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-		//		"param": {path: "param", paramChild: &node{path: ":id", starChild: &node{
-		//			path: "*", handler: mockHandler}},
-		//		}}},
-		//	}}},
+		{
+			name:   "GET /param/:id",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/param/:id", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"param": {path: "param", paramChild: &node{path: ":id", handler: mockHandler}},
+			}}}},
+		},
+		{
+			name:   "GET /param/:id/detail",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/param/:id/detail", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"param": {path: "param", paramChild: &node{path: ":id", children: map[string]*node{
+					"detail": {path: "detail", handler: mockHandler},
+				}}},
+			}}}},
+		},
+		{ // param, star 同时
+			name:   "GET /param/:id/*",
+			fields: fields{trees: make(map[string]*node)},
+			args:   args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
+			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"param": {path: "param", paramChild: &node{path: ":id", starChild: &node{
+					path: "*", handler: mockHandler}},
+				}}},
+			}}},
 	}
 
 	for _, tt := range trueTests {
@@ -359,21 +359,17 @@ func TestRouter_findRoute(t *testing.T) {
 			method: http.MethodPost,
 			path:   "/login/:username",
 		},
+		{
+			method: http.MethodGet,
+			path:   "/param/:id",
+		},
 		//{
 		//	method: http.MethodGet,
-		//	path:   "/param",
-		//},
-		//{
-		//	method: http.MethodGet,
-		//	path:   "/param/:id",
+		//	path:   "/param/:id/*",
 		//},
 		//{
 		//	method: http.MethodGet,
 		//	path:   "/param/:id/detail",
-		//},
-		//{
-		//	method: http.MethodGet,
-		//	path:   "/param/:id/*",
 		//},
 	}
 
@@ -473,13 +469,46 @@ func TestRouter_findRoute(t *testing.T) {
 				},
 			},
 		},
-		//{ // /param/:id
-		//	name:      "param id",
-		//	args:      args{method: http.MethodGet, path: "/param/0112"},
+		{ // /param/:id
+			name:      ":id",
+			args:      args{method: http.MethodGet, path: "/param/123"},
+			wantFound: true,
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					handler: mockHandler,
+					path:    ":id",
+				},
+				pathParams: map[string]string{
+					"id": "123",
+				},
+			},
+		},
+		//{ // /param/:id/*
+		//	name:      ":id/*",
+		//	args:      args{method: http.MethodGet, path: "/param/234/abc"},
 		//	wantFound: true,
-		//	wantNode: &node{
-		//		handler: mockHandler,
-		//		path:    ":id",
+		//	wantMatchInfo: &matchInfo{
+		//		n: &node{
+		//			handler: mockHandler,
+		//			path:    "*",
+		//		},
+		//		pathParams: map[string]string{
+		//			"id": "234",
+		//		},
+		//	},
+		//},
+		//{ // /param/:id/detail
+		//	name:      ":id/detail",
+		//	args:      args{method: http.MethodGet, path: "/param/abc/detail"},
+		//	wantFound: true,
+		//	wantMatchInfo: &matchInfo{
+		//		n: &node{
+		//			handler: mockHandler,
+		//			path:    "detail",
+		//		},
+		//		pathParams: map[string]string{
+		//			"id": "abc",
+		//		},
 		//	},
 		//},
 	}
