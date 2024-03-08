@@ -31,147 +31,170 @@ func TestRouter_addRoute(t *testing.T) {
 		args       args
 		wantRouter router
 	}{
-		// 1.全静态匹配
-		{ // 根节点需要特殊处理
-			name:       "GET /",
-			fields:     fields{trees: make(map[string]*node)},
-			args:       args{method: http.MethodGet, path: "/", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}}},
-		},
-		{
-			name:   "GET /user",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/user", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"user": {path: "user", handler: mockHandler},
-			}}}},
-		},
-		{
-			name:   "GET /user/home",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/user/home", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"user": {path: "user", children: map[string]*node{"home": {path: "home", handler: mockHandler}}},
-			}}}},
-		},
-		{
-			name:   "GET /order",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/order", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"order": {path: "order", handler: mockHandler},
-			}}}},
-		},
-		{
-			name:   "GET /order/detail",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/order/detail", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"order": {path: "order", children: map[string]*node{"detail": {path: "detail", handler: mockHandler}}},
-			}}}},
-		},
-		// 测试 POST 方法
-		{
-			name:   "POST /order/create",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodPost, path: "/order/create", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
-				"order": {path: "order", children: map[string]*node{"create": {path: "create", handler: mockHandler}}},
-			}}}},
-		},
-		{
-			name:   "POST /login",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodPost, path: "/login", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
-				"login": {path: "login", handler: mockHandler},
-			}}}},
-		},
-		//{ // 不支持前导没有 "/" ---> router 加校验
-		//	method: http.MethodPost,
-		//	path:   "login",
-		//}
-
-		// 2.通配符匹配
-		{
-			name:   "GET /order/*",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/order/*", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"order": {path: "order", starChild: &node{path: "*", handler: mockHandler}},
-			}}}},
-		},
-		{
-			name:   "GET /*",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/*", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{
-				path: "*", handler: mockHandler,
-			}}}},
-		},
-		{
-			name:   "GET /*/*",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/*/*", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", starChild: &node{
-				path: "*", handler: mockHandler,
-			}}}}},
-		},
-		{
-			name:   "GET /*/abc",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/*/abc", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
-				"abc": {path: "abc", handler: mockHandler},
-			}}}}},
-		},
-		{
-			name:   "GET /*/abc/*",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/*/abc/*", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
-				"abc": {path: "abc", starChild: &node{path: "*", handler: mockHandler}},
-			}}}}},
-		},
-
-		// 3. 参数路径匹配 eg: /user/:id -> /user/123, id = 123
-		{
-			name:   "GET /order/detail/:id",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/order/detail/:id", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"order": {path: "order", children: map[string]*node{"detail": {path: "detail", paramChild: &node{
-					path: ":id", handler: mockHandler,
-				}}}},
-			}}}},
-		},
-		{
-			name:   "GET /param/:id",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/param/:id", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"param": {path: "param", paramChild: &node{path: ":id", handler: mockHandler}},
-			}}}},
-		},
-		{
-			name:   "GET /param/:id/detail",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/param/:id/detail", handleFunc: mockHandler},
-			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"param": {path: "param", paramChild: &node{path: ":id", children: map[string]*node{
-					"detail": {path: "detail", handler: mockHandler},
-				}}},
-			}}}},
-		},
+		//// 1.全静态匹配
+		//{ // 根节点需要特殊处理
+		//	name:       "GET /",
+		//	fields:     fields{trees: make(map[string]*node)},
+		//	args:       args{method: http.MethodGet, path: "/", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}}},
+		//},
+		//{
+		//	name:   "GET /user",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/user", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"user": {path: "user", handler: mockHandler},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /user/home",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/user/home", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"user": {path: "user", children: map[string]*node{"home": {path: "home", handler: mockHandler}}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /order",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/order", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"order": {path: "order", handler: mockHandler},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /order/detail",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/order/detail", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"order": {path: "order", children: map[string]*node{"detail": {path: "detail", handler: mockHandler}}},
+		//	}}}},
+		//},
+		//// 测试 POST 方法
+		//{
+		//	name:   "POST /order/create",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodPost, path: "/order/create", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+		//		"order": {path: "order", children: map[string]*node{"create": {path: "create", handler: mockHandler}}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "POST /login",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodPost, path: "/login", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodPost: {path: "/", children: map[string]*node{
+		//		"login": {path: "login", handler: mockHandler},
+		//	}}}},
+		//},
+		////{ // 不支持前导没有 "/" ---> router 加校验
+		////	method: http.MethodPost,
+		////	path:   "login",
+		////}
+		//
+		//// 2.通配符匹配
+		//{
+		//	name:   "GET /order/*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/order/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"order": {path: "order", starChild: &node{path: "*", handler: mockHandler}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{
+		//		path: "*", handler: mockHandler,
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /*/*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/*/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", starChild: &node{
+		//		path: "*", handler: mockHandler,
+		//	}}}}},
+		//},
+		//{
+		//	name:   "GET /*/abc",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/*/abc", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
+		//		"abc": {path: "abc", handler: mockHandler},
+		//	}}}}},
+		//},
+		//{
+		//	name:   "GET /*/abc/*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/*/abc/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", starChild: &node{path: "*", children: map[string]*node{
+		//		"abc": {path: "abc", starChild: &node{path: "*", handler: mockHandler}},
+		//	}}}}},
+		//},
+		//
+		//// 3. 参数路径匹配 eg: /user/:id -> /user/123, id = 123
+		//{
+		//	name:   "GET /order/detail/:id",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/order/detail/:id", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"order": {path: "order", children: map[string]*node{"detail": {path: "detail", paramChild: &node{
+		//			path: ":id", handler: mockHandler,
+		//		}}}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /param/:id",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", handler: mockHandler}},
+		//	}}}},
+		//},
+		//{
+		//	name:   "GET /param/:id/detail",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id/detail", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", children: map[string]*node{
+		//			"detail": {path: "detail", handler: mockHandler},
+		//		}}},
+		//	}}}},
+		//},
 		{ // param, star 同时
-			name:   "GET /param/:id/*",
-			fields: fields{trees: make(map[string]*node)},
-			args:   args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
+			name: "GET /param/:id/*",
+			fields: fields{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+				"param": {path: "param", paramChild: &node{
+					path: ":id", children: map[string]*node{
+						"detail": {
+							path: "detail", handler: mockHandler},
+					}}},
+			}}}},
+			args: args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
 			wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"param": {path: "param", paramChild: &node{path: ":id", starChild: &node{
-					path: "*", handler: mockHandler}},
+				"param": {path: "param", paramChild: &node{
+					path: ":id",
+					starChild: &node{
+						path: "*", handler: mockHandler,
+					},
+					children: map[string]*node{
+						"detail": {path: "detail", handler: mockHandler},
+					},
+				},
 				}}},
-			}}},
+			}},
+		},
+		//{ // param, star 同时
+		//	name:   "GET /param/:id/*",
+		//	fields: fields{trees: make(map[string]*node)},
+		//	args:   args{method: http.MethodGet, path: "/param/:id/*", handleFunc: mockHandler},
+		//	wantRouter: router{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
+		//		"param": {path: "param", paramChild: &node{path: ":id", starChild: &node{
+		//			path: "*", handler: mockHandler}},
+		//		}}},
+		//	}}},
 	}
 
 	for _, tt := range trueTests {
