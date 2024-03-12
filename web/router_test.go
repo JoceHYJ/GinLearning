@@ -315,7 +315,9 @@ func TestRouter_addRoute(t *testing.T) {
 		{
 			name: "根节点重复注册",
 			fields: fields{
-				trees: map[string]*node{http.MethodGet: {path: "/", handler: mockHandler}},
+				trees: map[string]*node{http.MethodGet: {
+					path: "/", handler: mockHandler,
+				}},
 			},
 			args: args{
 				method:     http.MethodGet,
@@ -327,12 +329,14 @@ func TestRouter_addRoute(t *testing.T) {
 		{
 			name: "子节点重复注册",
 			fields: fields{
-				trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-					"a": {path: "a", children: map[string]*node{
-						"b": {path: "b", children: map[string]*node{
-							"c": {path: "c", handler: mockHandler},
-						}}}},
-				}}},
+				trees: map[string]*node{http.MethodGet: {
+					path: "/", children: map[string]*node{
+						"a": {path: "a", children: map[string]*node{
+							"b": {path: "b", children: map[string]*node{
+								"c": {path: "c", handler: mockHandler},
+							}}}},
+					},
+				}},
 			},
 			args: args{
 				method:     http.MethodGet,
@@ -343,8 +347,12 @@ func TestRouter_addRoute(t *testing.T) {
 		},
 		{
 			name: "不允许同时注册参数路径和通配符匹配,已有通配符匹配",
-			fields: fields{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"a": {path: "a", starChild: &node{path: "*", handler: mockHandler}}},
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", starChild: &node{
+						path: "*", handler: mockHandler,
+					}},
+				},
 			}}},
 			args: args{
 				method:     http.MethodGet,
@@ -355,8 +363,12 @@ func TestRouter_addRoute(t *testing.T) {
 		},
 		{
 			name: "不允许同时注册参数路径和通配符匹配,已有参数路径匹配",
-			fields: fields{trees: map[string]*node{http.MethodGet: {path: "/", children: map[string]*node{
-				"a": {path: "a", paramChild: &node{path: ":id", handler: mockHandler}}},
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", paramChild: &node{
+						path: ":id", handler: mockHandler,
+					}},
+				},
 			}}},
 			args: args{
 				method:     http.MethodGet,
@@ -364,6 +376,98 @@ func TestRouter_addRoute(t *testing.T) {
 				handleFunc: mockHandler,
 			},
 			wantErr: "web: 不允许同时注册参数路径和通配符匹配, 已有参数路径匹配",
+		},
+		{
+			name: "不允许同时注册正则路由和通配符路由, 已有通配符路由",
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", starChild: &node{
+						path: "*", handler: mockHandler,
+					}},
+				},
+			}}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/:id(.*)",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册正则路由和通配符路由, 已有通配符路由",
+		},
+		{
+			name: "不允许同时注册正则路由和参数路由, 已有参数路由",
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", children: map[string]*node{
+						"b": {path: "b", paramChild: &node{
+							path: ":id", handler: mockHandler,
+						}},
+					}},
+				},
+			}}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/:id(.*)",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册正则路由和参数路由, 已有参数路由",
+		},
+		{
+			name: "不允许同时注册正则路由和通配符路由, 已有正则路由",
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", children: map[string]*node{
+						"b": {path: "b", regChild: &node{
+							path: ":id(.*)", handler: mockHandler,
+						},
+						},
+					}},
+				}},
+			}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/*",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册正则路由和通配符路由, 已有正则路由",
+		},
+		{
+			name: "不允许同时注册正则路由和参数路由, 已有正则路由",
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", children: map[string]*node{
+						"b": {path: "b", regChild: &node{
+							path: ":id(.*)", handler: mockHandler,
+						},
+						},
+					}},
+				}},
+			}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/:id",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 不允许同时注册正则路由和参数路由, 已有正则路由",
+		},
+		{
+			name: "路由冲突, 参数路由冲突",
+			fields: fields{trees: map[string]*node{http.MethodGet: {
+				path: "/", children: map[string]*node{
+					"a": {path: "a", children: map[string]*node{
+						"b": {path: "b", children: map[string]*node{
+							"c": {path: "c", paramChild: &node{
+								path: ":id", handler: mockHandler,
+							}},
+						}},
+					}},
+				},
+			}}},
+			args: args{
+				method:     http.MethodGet,
+				path:       "/a/b/c/:name",
+				handleFunc: mockHandler,
+			},
+			wantErr: "web: 路由冲突, 参数路由冲突, 已有 :id, 新注册 :name",
 		},
 	}
 
