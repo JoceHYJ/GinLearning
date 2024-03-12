@@ -549,6 +549,14 @@ func TestRouter_findRoute(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/param/:id/detail",
 		},
+		{
+			method: http.MethodDelete,
+			path:   "/reg/:id(.*)",
+		},
+		{
+			method: http.MethodDelete,
+			path:   "/:id([0-9]+)/home",
+		},
 	}
 
 	mockHandler := func(ctx *Context) {}
@@ -689,6 +697,39 @@ func TestRouter_findRoute(t *testing.T) {
 				},
 			},
 		},
+		{ // /reg/:id(.*)
+			name:      ":id(.*)",
+			args:      args{method: http.MethodDelete, path: "/reg/123"},
+			wantFound: true,
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					handler: mockHandler,
+					path:    ":id(.*)",
+				},
+				pathParams: map[string]string{
+					"id": "123",
+				},
+			},
+		},
+		{ // /:id([0-9]+)/home
+			name:      ":id([0-9]+)",
+			args:      args{method: http.MethodDelete, path: "/123/home"},
+			wantFound: true,
+			wantMatchInfo: &matchInfo{
+				n: &node{
+					path:    "home",
+					handler: mockHandler,
+				},
+				pathParams: map[string]string{
+					"id": "123",
+				},
+			},
+		},
+		{ // 未命中 /:id([0-9]+)/home
+			name:      http.MethodDelete,
+			args:      args{method: http.MethodDelete, path: "/abc/home"},
+			wantFound: false,
+		},
 	}
 
 	for _, tt := range test {
@@ -710,65 +751,90 @@ func TestRouter_findRoute(t *testing.T) {
 	}
 }
 
-// equal 方法: 断言
+// equal 方法断言
 // string 返回错误信息 --> 排查问题
 // bool 返回是否相等
+// r 为 wantRouter, y 为 gotRouter
 func (r *router) equal(y *router) (string, bool) {
 	for k, v := range r.trees {
 		dst, ok := y.trees[k]
 		if !ok {
-			return fmt.Sprintf("找不到对应的 http method"), false
+			return fmt.Sprintf("找不到对应的 http method %s", k), false
 		}
 		// v, dst 要相等
 		msg, equal := v.equal(dst)
 		if !equal {
-			return msg, false
+			return k + "-" + msg, equal
 		}
 	}
 	return "", true
 }
 
-// n: want y: got
+// equal: HandleFunc 无法直接比较通过 equal 方法比较
+// n: wantNode y: gotNode
 func (n *node) equal(y *node) (string, bool) {
+	if y == nil {
+		return "目标节点为 nil", false
+	}
 	if n.path != y.path {
-		return fmt.Sprintf("节点路径不匹配"), false
+		return fmt.Sprintf("%s 节点 path 不相等 x %s, y %s", n.path, n.path, y.path), false
 	}
 
-	if n.starChild != nil {
-		msg, ok := n.starChild.equal(y.starChild)
-		if !ok {
-			return msg, ok
-		}
+	nhv := reflect.ValueOf(n.handler)
+	yhv := reflect.ValueOf(y.handler)
+	if nhv != yhv {
+		return fmt.Sprintf("%s 节点 handler 不相等 x %s, y %s", n.path, nhv.Type().String(), yhv.Type().String()), false
 	}
 
-	if n.paramChild != nil {
-		msg, ok := n.paramChild.equal(y.paramChild)
-		if !ok {
-			return msg, ok
-		}
+	if n.typ != y.typ {
+		return fmt.Sprintf("%s 节点类型不相等 x %d, y %d", n.path, n.typ, y.typ), false
+	}
+
+	if n.paramName != y.paramName {
+		return fmt.Sprintf("%s 节点参数名字不相等 x %s, y %s", n.path, n.paramName, y.paramName), false
 	}
 
 	if len(n.children) != len(y.children) {
-		return fmt.Sprintf("子节点数量不匹配"), false
+		return fmt.Sprintf("%s 子节点长度不等", n.path), false
 	}
 
-	// 比较 handler --> 利用反射
-	nHandler := reflect.ValueOf(n.handler)
-	yHandler := reflect.ValueOf(y.handler)
-	if nHandler != yHandler {
-		return fmt.Sprintf("Handler 不匹配"), false
+	if len(n.children) == 0 {
+		return "", true
 	}
 
-	// 递归比较子节点
-	for path, c := range n.children {
-		dst, ok := y.children[path]
+	if n.starChild != nil {
+		str, ok := n.starChild.equal(y.starChild)
 		if !ok {
-			return fmt.Sprintf("子节点 %s 不存在", path), false
-		}
-		msg, ok := c.equal(dst)
-		if !ok {
-			return msg, false
+			return fmt.Sprintf("%s 通配符节点不匹配 %s", n.path, str), false
 		}
 	}
-	return "匹配成功", true
+	if n.paramChild != nil {
+		str, ok := n.paramChild.equal(y.paramChild)
+		if !ok {
+			return fmt.Sprintf("%s 路径参数节点不匹配 %s", n.path, str), false
+		}
+	}
+
+	if n.regChild != nil {
+		str, ok := n.regChild.equal(y.regChild)
+		if !ok {
+			return fmt.Sprintf("%s 路径参数节点不匹配 %s", n.path, str), false
+		}
+	}
+
+	//if len(n.children) == 0 {
+	//	return "", true
+	//}
+
+	for k, v := range n.children {
+		yv, ok := y.children[k]
+		if !ok {
+			return fmt.Sprintf("%s 目标节点缺少子节点 %s", n.path, k), false
+		}
+		str, ok := v.equal(yv)
+		if !ok {
+			return n.path + "-" + str, ok
+		}
+	}
+	return "", true
 }

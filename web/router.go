@@ -114,28 +114,46 @@ func (r *router) findRoute(method, path string) (*matchInfo, bool) {
 	path = strings.Trim(path, "/")
 	// 按照 / 切割 path
 	segs := strings.Split(path, "/")
-	//pathParams := make(map[string]string)
-	var pathParams map[string]string
-	for _, seg := range segs {
-		child, paramChild, found := root.childOf(seg)
-		if !found {
+	////pathParams := make(map[string]string)
+	//var pathParams map[string]string
+	//for _, seg := range segs {
+	//	child, paramChild, found := root.childOf(seg)
+	//	if !found {
+	//		return nil, false
+	//	}
+	//	root = child
+	//	// 命中了路径参数
+	//	if paramChild {
+	//		if pathParams == nil {
+	//			pathParams = make(map[string]string)
+	//		}
+	//		// path 是 :id 的形式
+	//		pathParams[child.path[1:]] = seg
+	//	}
+	//}
+	//return &matchInfo{
+	//	n:          root,
+	//	pathParams: pathParams,
+	//}, true // 返回找到的节点 ---> 但是不能返回用户是否注册了 handler
+	////return root, root.handler != nil // 返回用户是否注册了 handler
+	mi := &matchInfo{}
+	for _, s := range segs {
+		var child *node
+		child, ok = root.childOf(s)
+		if !ok {
+			if root.typ == nodeTypeAny {
+				mi.n = root
+				return mi, true
+			}
 			return nil, false
 		}
-		root = child
-		// 命中了路径参数
-		if paramChild {
-			if pathParams == nil {
-				pathParams = make(map[string]string)
-			}
-			// path 是 :id 的形式
-			pathParams[child.path[1:]] = seg
+		if child.paramName != "" {
+			mi.addValue(child.paramName, s)
 		}
+		root = child
 	}
-	return &matchInfo{
-		n:          root,
-		pathParams: pathParams,
-	}, true // 返回找到的节点 ---> 但是不能返回用户是否注册了 handler
-	//return root, root.handler != nil // 返回用户是否注册了 handler
+	mi.n = root
+	return mi, true
 }
 
 // childOrCreate 用于查找或创建节点的子节点
@@ -246,26 +264,50 @@ func (n *node) childOrCreateReg(path string, expr string, paramName string) *nod
 }
 
 // childOf 用于查找子节点
+func (n *node) childOf(path string) (*node, bool) {
+	if n.children == nil {
+		return n.childOfNonStatic(path)
+	}
+	res, ok := n.children[path]
+	if !ok {
+		return n.childOfNonStatic(path)
+	}
+	return res, ok
+}
+
 // 优先考虑静态匹配
 // 匹配失败则尝试通配符匹配
 // 参数路径匹配
 // 返回值参数: 第一个是子节点，第二个标记是否是路径参数，第三个标记是否命中
-func (n *node) childOf(path string) (*node, bool, bool) {
-	if n.children == nil {
-		//return nil, false
-		if n.paramChild != nil {
-			return n.paramChild, true, true
+//	func (n *node) childOf(path string) (*node, bool, bool) {
+//		if n.children == nil {
+//			//return nil, false
+//			if n.paramChild != nil {
+//				return n.paramChild, true, true
+//			}
+//			return n.starChild, false, n.starChild != nil
+//		}
+//		child, ok := n.children[path]
+//		if !ok {
+//			if n.paramChild != nil {
+//				return n.paramChild, true, true
+//			}
+//			return n.starChild, false, n.starChild != nil
+//		}
+//		return child, false, ok
+//	}
+
+// childOfNonStatic 从非静态匹配的子节点里面查找
+func (n *node) childOfNonStatic(path string) (*node, bool) {
+	if n.regChild != nil {
+		if n.regChild.regExpr.Match([]byte(path)) {
+			return n.regChild, true
 		}
-		return n.starChild, false, n.starChild != nil
 	}
-	child, ok := n.children[path]
-	if !ok {
-		if n.paramChild != nil {
-			return n.paramChild, true, true
-		}
-		return n.starChild, false, n.starChild != nil
+	if n.paramChild != nil {
+		return n.paramChild, true
 	}
-	return child, false, ok
+	return n.starChild, n.starChild != nil
 }
 
 // parseParam 用于解析判断是不是正则表达式
@@ -329,4 +371,12 @@ type node struct {
 type matchInfo struct {
 	n          *node
 	pathParams map[string]string
+}
+
+func (m *matchInfo) addValue(key string, value string) {
+	if m.pathParams == nil {
+		// 大多数情况，参数路径只会有一段
+		m.pathParams = map[string]string{key: value}
+	}
+	m.pathParams[key] = value
 }
