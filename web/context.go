@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Context struct {
@@ -81,4 +82,14 @@ func (c *Context) PathValue(key string) StringValue {
 type StringValue struct {
 	val string
 	err error
+}
+
+// ToInt64 转换为 int64
+// 通过这种方式进行链式调用
+// 不需要在处理输入解析每种数据都写一次不同的数据类型的方法 int64, int32...
+func (s StringValue) ToInt64() (int64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	return strconv.ParseInt(s.val, 10, 64)
 }

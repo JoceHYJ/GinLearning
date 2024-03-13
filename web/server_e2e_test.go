@@ -55,6 +55,15 @@ func TestServer(t *testing.T) {
 		ctx.Resp.Write([]byte(fmt.Sprintf("hello, %s", ctx.Req.URL.Path)))
 	})
 
+	h.Get("/values/:id", func(ctx *Context) {
+		id, err := ctx.PathValue("id").ToInt64()
+		if err != nil {
+			ctx.Resp.WriteHeader(http.StatusBadRequest)
+			ctx.Resp.Write([]byte("invalid id"))
+			return
+		}
+		ctx.Resp.Write([]byte(fmt.Sprintf("hello, %d", id)))
+	})
 	//h.addRoute1(http.MethodGet, "/user", handler1, handler2)
 
 	//h.addRoute1(http.MethodGet, "/user", func(ctx Context) {
