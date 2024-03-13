@@ -64,6 +64,17 @@ func TestServer(t *testing.T) {
 		}
 		ctx.Resp.Write([]byte(fmt.Sprintf("hello, %d", id)))
 	})
+
+	type User struct {
+		Name string `json:"name"`
+	}
+
+	h.Get("/user/123", func(ctx *Context) {
+		ctx.RespJSON(202, User{
+			Name: "Tomato",
+		})
+	})
+
 	//h.addRoute1(http.MethodGet, "/user", handler1, handler2)
 
 	//h.addRoute1(http.MethodGet, "/user", func(ctx Context) {

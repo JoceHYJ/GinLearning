@@ -78,6 +78,27 @@ func (c *Context) PathValue(key string) StringValue {
 	}
 }
 
+// SetCookie 设置 Cookie
+func (c *Context) SetCookie(cookie *http.Cookie) {
+	http.SetCookie(c.Resp, cookie)
+}
+
+// RespJSONOK code:200
+func (c *Context) RespJSONOK(val any) error {
+	return c.RespJSON(http.StatusOK, val)
+}
+
+// RespJSON 处理输出,返回 JSON 数据
+func (c *Context) RespJSON(code int, val any) error {
+	bs, err := json.Marshal(val)
+	if err != nil {
+		return err
+	}
+	c.Resp.WriteHeader(code)
+	_, err = c.Resp.Write(bs)
+	return err
+}
+
 // StringValue 结构体
 type StringValue struct {
 	val string
