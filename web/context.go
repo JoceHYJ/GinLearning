@@ -30,18 +30,22 @@ func (c *Context) BindJson(val any) error {
 }
 
 // FormValue 解析请求体中 Form 的数据
-func (c *Context) FormValue(key string) (string, error) {
+func (c *Context) FormValue(key string) StringValue {
 	err := c.Req.ParseForm()
 	if err != nil {
-		return "", err
+		return StringValue{
+			err: err,
+		}
 	}
-	return c.Req.FormValue(key), nil
+	return StringValue{
+		val: c.Req.FormValue(key),
+	}
 }
 
 // QueryValue 解析请求体中的 Query 数据
 // 查询参数: URL 中 ? 后面的数据
 // Query 和  Form 相比没有缓存
-func (c *Context) QueryValue(key string) (string, error) {
+func (c *Context) QueryValue(key string) StringValue {
 	// 缓存 Query 数据 --> 避免重复 ParseQuery
 	// 第一次访问时，c.cacheQueryValues 为 nil
 	if c.cacheQueryValues == nil {
@@ -49,18 +53,32 @@ func (c *Context) QueryValue(key string) (string, error) {
 	}
 	vals, ok := c.cacheQueryValues[key]
 	if !ok {
-		return "", errors.New("web: key 不存在")
+		return StringValue{
+			err: errors.New("web: key 不存在"),
+		}
 	}
-	return vals[0], nil
+	return StringValue{
+		val: vals[0],
+	}
 	// 用户区别不出有值但为空和没有这个参数
 	//return c.Req.URL.Query().Get(key), nil
 }
 
 // PathValue 解析请求体中的 Path 数据
-func (c *Context) PathValue(key string) (string, error) {
+func (c *Context) PathValue(key string) StringValue {
 	val, ok := c.PathParams[key]
 	if !ok {
-		return "", errors.New("web: key 不存在")
+		return StringValue{
+			err: errors.New("web: key 不存在"),
+		}
 	}
-	return val, nil
+	return StringValue{
+		val: val,
+	}
+}
+
+// StringValue 结构体
+type StringValue struct {
+	val string
+	err error
 }
