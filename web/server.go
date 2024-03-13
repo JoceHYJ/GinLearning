@@ -31,6 +31,8 @@ type HTTPServer struct {
 	//*router
 	// r *router
 	// 三种组合方式都是可以的
+
+	mdls []Middleware
 }
 
 // NewHTTPServer 初始化,创建一个 HTTPServer (路由器)实例
@@ -57,7 +59,16 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 		Resp: writer,
 		Req:  request,
 	}
-	h.serve(ctx)
+	// 最后一个应该是 HTTPServer 执行路由匹配，执行用户代码
+	root := h.serve
+	// 从后往前回溯组装链条
+	// 把后一个作为前一个的 next 构造链条
+	for i := len(h.mdls) - 1; i >= 0; i-- {
+		root = h.mdls[i](root)
+	}
+	//h.serve(ctx)
+	// 从前往后
+	root(ctx)
 }
 
 func (h *HTTPServer) serve(ctx *Context) {
