@@ -47,6 +47,14 @@ func TestServer(t *testing.T) {
 		ctx.Resp.Write([]byte(fmt.Sprintf("hello, %s", ctx.Req.URL.Path)))
 	})
 
+	h.Post("/form", func(ctx *Context) {
+		err := ctx.Req.ParseForm()
+		if err != nil {
+			fmt.Println(err)
+		}
+		ctx.Resp.Write([]byte(fmt.Sprintf("hello, %s", ctx.Req.URL.Path)))
+	})
+
 	//h.addRoute1(http.MethodGet, "/user", handler1, handler2)
 
 	//h.addRoute1(http.MethodGet, "/user", func(ctx Context) {
