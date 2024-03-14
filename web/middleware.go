@@ -2,7 +2,8 @@ package web
 
 // AOP 设计方案
 
-// Middleware 函数式的责任链(洋葱)模式
+// Middleware 函数式的责任链模式
+// 洋葱模式
 type Middleware func(next HandleFunc) HandleFunc
 
 // java 中会使用后面两种
