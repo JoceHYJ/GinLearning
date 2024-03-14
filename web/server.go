@@ -35,10 +35,27 @@ type HTTPServer struct {
 	mdls []Middleware
 }
 
+// Option 模式
+
+type HTTPServerOption func(server *HTTPServer)
+
 // NewHTTPServer 初始化,创建一个 HTTPServer (路由器)实例
-func NewHTTPServer() *HTTPServer {
-	return &HTTPServer{
+func NewHTTPServer(opts ...HTTPServerOption) *HTTPServer {
+	//return &HTTPServer{
+	//	router: newRouter(),
+	//}
+	res := &HTTPServer{
 		router: newRouter(),
+	}
+	for _, opt := range opts {
+		opt(res)
+	}
+	return res
+}
+
+func ServerWithMiddleware(mdls ...Middleware) HTTPServerOption {
+	return func(server *HTTPServer) {
+		server.mdls = mdls
 	}
 }
 
@@ -80,6 +97,8 @@ func (h *HTTPServer) serve(ctx *Context) {
 		return
 	}
 	ctx.PathParams = info.pathParams
+	//ctx.MatchedRoute = info.n.path
+	ctx.MatchedRoute = info.n.route
 	info.n.handler(ctx)
 }
 

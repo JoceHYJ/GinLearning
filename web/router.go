@@ -72,6 +72,7 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 			panic("web: 路由冲突, 重复注册 [/]")
 		}
 		root.handler = handleFunc
+		root.route = "/"
 		return
 	}
 
@@ -95,6 +96,7 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 	}
 	// 把 handler 挂载到 root 上(赋值)
 	root.handler = handleFunc
+	root.route = path
 }
 
 // findRoute 查找路由的方法(查找对应的节点)
@@ -365,6 +367,9 @@ type node struct {
 
 	// handler 命中路由后执行的逻辑
 	handler HandleFunc
+
+	// route 到达该节点的完整路由路径
+	route string
 }
 
 // 参数匹配信息

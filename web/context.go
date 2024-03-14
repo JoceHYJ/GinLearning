@@ -15,6 +15,8 @@ type Context struct {
 
 	// 缓存的数据
 	cacheQueryValues url.Values
+
+	MatchedRoute string
 }
 
 // BindJson 解析请求体中的 json 数据
