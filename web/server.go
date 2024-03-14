@@ -147,6 +147,8 @@ func (h *HTTPServer) Options(path string, handleFunc HandleFunc) {
 //func (h *HTTPServer) addRoute1(method string, path string, handles ...HandleFunc) {
 //}
 
+// Start 启动服务器, 用户定义指定端口
+// 编程接口
 func (h *HTTPServer) Start(addr string) error {
 	// 也可以自己内部创建 Server 来启动服务
 	//http.Server{}
@@ -162,3 +164,14 @@ func (h *HTTPServer) Start(addr string) error {
 	return http.Serve(l, h)
 	//panic("implement me")
 }
+
+// 配置接口
+// 问题:
+// 路径: 相对 or 绝对
+// 配置文件格式: json yaml xml
+//func NewHTTPServerV1(cfgFilePath string) *HTTPServer {
+//	// 加载配置文件
+//	// 解析
+//    // 初始化
+//    return &HTTPServer{}
+//}

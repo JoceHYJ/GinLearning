@@ -16,7 +16,7 @@ func (m *MiddlewareBuilder) LogFunc(logFunc func(accessLog string)) *MiddlewareB
 	return m
 }
 
-func (m MiddlewareBuilder) Build() web.Middleware {
+func (m *MiddlewareBuilder) Build() web.Middleware {
 	return func(next web.HandleFunc) web.HandleFunc {
 		return func(ctx *web.Context) {
 			// 要记录请求
