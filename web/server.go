@@ -1,6 +1,7 @@
 package web
 
 import (
+	"log"
 	"net"
 	"net/http"
 )
@@ -175,3 +176,23 @@ func (h *HTTPServer) Start(addr string) error {
 //    // 初始化
 //    return &HTTPServer{}
 //}
+
+// Use 向 HTTPServer 实例中添加中间件
+func (h *HTTPServer) Use(mdls ...Middleware) {
+	if h.mdls == nil {
+		h.mdls = mdls
+		return
+	}
+	h.mdls = append(h.mdls, mdls...)
+}
+
+// flashResp 回写响应
+func (h *HTTPServer) flashResp(ctx *Context) {
+	if ctx.RespStatusCode > 0 {
+		ctx.Resp.WriteHeader(ctx.RespStatusCode)
+	}
+	_, err := ctx.Resp.Write(ctx.RespData)
+	if err != nil {
+		log.Fatalln("回写响应失败:", err)
+	}
+}

@@ -9,8 +9,11 @@ import (
 )
 
 type Context struct {
-	Resp       http.ResponseWriter
-	Req        *http.Request
+	Resp           http.ResponseWriter
+	Req            *http.Request
+	RespStatusCode int
+	RespData       []byte
+
 	PathParams map[string]string
 
 	// 缓存的数据
@@ -116,3 +119,12 @@ func (s StringValue) ToInt64() (int64, error) {
 	}
 	return strconv.ParseInt(s.val, 10, 64)
 }
+
+func (s StringValue) String() (string, error) {
+	return s.val, s.err
+}
+
+// 不能用泛型
+// func (s StringValue) To[T any]() (T, error) {
+//
+// }

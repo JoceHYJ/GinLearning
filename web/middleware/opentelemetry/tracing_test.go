@@ -10,13 +10,14 @@ import (
 )
 
 func TestMiddlewareBuilder_Build(t *testing.T) {
-	tracer := otel.GetTracerProvider().Tracer(defaultInstrumentationName)
-	builder := MiddlewareBuilder{
-		Tracer: tracer,
-	}
-	server := web.NewHTTPServer(web.ServerWithMiddleware(builder.Build()))
-
-	server.Get("/user", func(ctx *web.Context) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	//initZipkin(t)
+	initJaeger(t)
+	s := web.NewHTTPServer()
+	s.Get("/", func(ctx *web.Context) {
+		ctx.Resp.Write([]byte("hello, world"))
+	})
+	s.Get("/user", func(ctx *web.Context) {
 		c, span := tracer.Start(ctx.Req.Context(), "first_layer")
 		defer span.End()
 
@@ -29,7 +30,10 @@ func TestMiddlewareBuilder_Build(t *testing.T) {
 		time.Sleep(300 * time.Millisecond)
 		third2.End()
 		second.End()
+		ctx.RespStatusCode = 200
+		ctx.RespData = []byte("hello, world")
 	})
 
-	server.Start(":8081")
+	s.Use((&MiddlewareBuilder{Tracer: tracer}).Build())
+	s.Start(":8081")
 }
