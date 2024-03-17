@@ -3,6 +3,8 @@ package accesslog
 import (
 	"GinLearning/web"
 	"encoding/json"
+	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"log"
 )
 
@@ -21,6 +23,26 @@ func NewBuilder() *MiddlewareBuilder {
 	return &MiddlewareBuilder{
 		logFunc: func(accessLog string) {
 			log.Println(accessLog)
+		},
+	}
+}
+
+func NewLogrusBuilder() *MiddlewareBuilder {
+	return &MiddlewareBuilder{
+		logFunc: func(accessLog string) {
+			logrus.Println(accessLog)
+		},
+	}
+}
+
+func NewZapBuilder() *MiddlewareBuilder {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed to create zap logger: %v", err)
+	}
+	return &MiddlewareBuilder{
+		logFunc: func(accessLog string) {
+			logger.Info(accessLog)
 		},
 	}
 }

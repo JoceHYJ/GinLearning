@@ -9,8 +9,15 @@ import (
 )
 
 func TestMiddlewareBuilder_Log_file(t *testing.T) {
+
 	// 创建一个Builder对象
-	builder := NewBuilder()
+	//builder := NewBuilder()
+
+	// 替换为 logrus 库进行日志记录
+	//builder := NewLogrusBuilder()
+
+	// 替换为 zap 库进行日志记录
+	builder := NewZapBuilder()
 
 	// log 文件路径
 	logFile, err := os.OpenFile("access.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
