@@ -25,7 +25,13 @@ func TestMiddlewareBuilder_Log_file(t *testing.T) {
 		t.Fatalf("Failed to open log file: %v", err)
 	}
 
-	defer logFile.Close()
+	//defer logFile.Close()
+
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			t.Fatalf("Failed to close log file: %v", err)
+		}
+	}()
 
 	mdl := builder.LogFunc(func(log string) {
 		logFile.WriteString(fmt.Sprintf("%s: %s \n", time.Now().Format(time.RFC3339), log))
