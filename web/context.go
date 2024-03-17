@@ -99,8 +99,11 @@ func (c *Context) RespJSON(code int, val any) error {
 	if err != nil {
 		return err
 	}
-	c.Resp.WriteHeader(code)
-	_, err = c.Resp.Write(bs)
+	//c.Resp.WriteHeader(code)
+	//_, err = c.Resp.Write(bs)
+	//return err
+	c.RespStatusCode = code
+	c.RespData = bs
 	return err
 }
 

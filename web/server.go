@@ -86,15 +86,30 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 	}
 	//h.serve(ctx)
 	// 从前往后
+	// 第一个应该是回写响应的
+	// 因为在调用 next 之后才会回写响应
+	// 所以实际上 flashResp 应该是最后一个步骤
+	var m Middleware = func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
+			next(ctx)
+			h.flashResp(ctx)
+		}
+	}
+	root = m(root)
 	root(ctx)
 }
 
 func (h *HTTPServer) serve(ctx *Context) {
 	// 查找路由, 并执行命中的业务逻辑
 	info, ok := h.findRoute(ctx.Req.Method, ctx.Req.URL.Path)
-	if !ok || info.n.handler == nil {
-		ctx.Resp.WriteHeader(http.StatusNotFound)
-		_, _ = ctx.Resp.Write([]byte("404 NOT FOUND"))
+	//if !ok || info.n.handler == nil {
+	//	ctx.Resp.WriteHeader(http.StatusNotFound)
+	//	_, _ = ctx.Resp.Write([]byte("404 NOT FOUND"))
+	//	return
+	//}
+
+	if !ok || info.n == nil || info.n.handler == nil {
+		ctx.RespStatusCode = http.StatusNotFound
 		return
 	}
 	ctx.PathParams = info.pathParams
