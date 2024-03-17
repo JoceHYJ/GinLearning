@@ -54,8 +54,7 @@ func initZipkin(t *testing.T) {
 }
 
 func initJaeger(t *testing.T) {
-	//url := "http://localhost:14268/api/traces"
-	url := "http://localhost:16686/api/traces"
+	url := "http://localhost:14268/api/traces"
 	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
 	if err != nil {
 		t.Fatal(err)
