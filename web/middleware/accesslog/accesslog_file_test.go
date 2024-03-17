@@ -13,9 +13,9 @@ func TestMiddlewareBuilder_Log_file(t *testing.T) {
 	builder := NewBuilder()
 
 	// log 文件路径
-	logFile, err := os.Create("access.log")
+	logFile, err := os.OpenFile("access.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		t.Fatalf("Failed to create log file: %v", err)
+		t.Fatalf("Failed to open log file: %v", err)
 	}
 
 	defer logFile.Close()
