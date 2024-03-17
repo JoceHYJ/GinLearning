@@ -3,6 +3,7 @@ package accesslog
 import (
 	"GinLearning/web"
 	"encoding/json"
+	"log"
 )
 
 // Builder 模式的应用
@@ -14,6 +15,14 @@ type MiddlewareBuilder struct {
 func (m *MiddlewareBuilder) LogFunc(logFunc func(accessLog string)) *MiddlewareBuilder {
 	m.logFunc = logFunc
 	return m
+}
+
+func NewBuilder() *MiddlewareBuilder {
+	return &MiddlewareBuilder{
+		logFunc: func(accessLog string) {
+			log.Println(accessLog)
+		},
+	}
 }
 
 func (m *MiddlewareBuilder) Build() web.Middleware {
