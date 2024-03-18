@@ -33,7 +33,8 @@ type HTTPServer struct {
 	// r *router
 	// 三种组合方式都是可以的
 
-	mdls []Middleware
+	mdls      []Middleware
+	tplEngine TemplateEngine
 }
 
 // Option 模式
@@ -60,6 +61,12 @@ func ServerWithMiddleware(mdls ...Middleware) HTTPServerOption {
 	}
 }
 
+func ServerWithTemplateEngine(tplEngine TemplateEngine) HTTPServerOption {
+	return func(server *HTTPServer) {
+		server.tplEngine = tplEngine
+	}
+}
+
 // 定义二: 如果用户不希望使用 ListenAndServe 方法，那么 Server 需要提供 HTTPS 的支持
 //type HTTPSServer struct {
 //	HTTPServer
@@ -74,8 +81,9 @@ func (h *HTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request
 	// 2.路由匹配
 	// 3.执行业务逻辑
 	ctx := &Context{
-		Resp: writer,
-		Req:  request,
+		Resp:      writer,
+		Req:       request,
+		tplEngine: h.tplEngine,
 	}
 	// 最后一个应该是 HTTPServer 执行路由匹配，执行用户代码
 	root := h.serve

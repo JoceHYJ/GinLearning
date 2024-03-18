@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"html/template"
-	"io/fs"
 )
 
 type TemplateEngine interface {
@@ -26,20 +25,21 @@ func (g *GoTemplateEngine) Render(ctx context.Context,
 	return res.Bytes(), err
 }
 
-func (g *GoTemplateEngine) LoadFromGlob(pattern string) error {
-	var err error
-	g.T, err = template.ParseGlob(pattern)
-	return err
-}
-
-func (g *GoTemplateEngine) LoadFromFiles(filenames ...string) error {
-	var err error
-	g.T, err = template.ParseFiles(filenames...)
-	return err
-}
-
-func (g *GoTemplateEngine) LoadFromFS(fs fs.FS, patterns ...string) error {
-	var err error
-	g.T, err = template.ParseFS(fs, patterns...)
-	return err
-}
+// 管理模板没有必要进行简单的二次封装
+//func (g *GoTemplateEngine) LoadFromGlob(pattern string) error {
+//	var err error
+//	g.T, err = template.ParseGlob(pattern)
+//	return err
+//}
+//
+//func (g *GoTemplateEngine) LoadFromFiles(filenames ...string) error {
+//	var err error
+//	g.T, err = template.ParseFiles(filenames...)
+//	return err
+//}
+//
+//func (g *GoTemplateEngine) LoadFromFS(fs fs.FS, patterns ...string) error {
+//	var err error
+//	g.T, err = template.ParseFS(fs, patterns...)
+//	return err
+//}
