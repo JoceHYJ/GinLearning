@@ -20,6 +20,9 @@ type Context struct {
 	cacheQueryValues url.Values
 
 	MatchedRoute string
+
+	// 页面渲染引擎
+	tplEngine TemplateEngine
 }
 
 // BindJson 解析请求体中的 json 数据
@@ -131,3 +134,15 @@ func (s StringValue) String() (string, error) {
 // func (s StringValue) To[T any]() (T, error) {
 //
 // }
+
+// Render 渲染模板
+func (c *Context) Render(tplName string, data any) error {
+	var err error
+	c.RespData, err = c.tplEngine.Render(c.Req.Context(), tplName, data)
+	if err != nil {
+		c.RespStatusCode = 500
+		return err
+	}
+	c.RespStatusCode = 200
+	return nil
+}
