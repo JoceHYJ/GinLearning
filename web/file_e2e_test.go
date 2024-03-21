@@ -38,3 +38,16 @@ func TestFileUploader(t *testing.T) {
 
 	s.Start(":8081")
 }
+
+func TestFileDownloader(t *testing.T) {
+
+	s := NewHTTPServer()
+
+	// 下载文件
+	downloader := FileDownloader{
+		Dir: filepath.Join("testdata", "downloads"),
+	}
+	s.Get("/download", downloader.Handle())
+	// http://localhost:8081/download?file=myfile.txt
+	s.Start(":8081")
+}

@@ -87,3 +87,25 @@ func (u FileUploader) Handle() HandleFunc {
 //func (u FileUploader) HandleFunc(ctx *Context) {
 //	// 文件上传逻辑
 //}
+
+type FileDownloader struct {
+	Dir string
+}
+
+func (f *FileDownloader) Handle() HandleFunc {
+	// 文件下载逻辑
+	return func(ctx *Context) {
+		req, _ := ctx.QueryValue("file").String()
+		path := filepath.Join(f.Dir, filepath.Clean(req))
+		fn := filepath.Base(path)
+		header := ctx.Resp.Header()
+		header.Set("Content-Disposition", "attachment;filename="+fn)
+		header.Set("Content-Description", "File Transfer")
+		header.Set("Content-Type", "application/octet-stream")
+		header.Set("Content-Transfer-Encoding", "binary")
+		header.Set("Expires", "0")
+		header.Set("Cache-Control", "must-revalidate")
+		header.Set("Pragma", "public")
+		http.ServeFile(ctx.Resp, ctx.Req, path)
+	}
+}
