@@ -1,0 +1,40 @@
+//go:build e2e
+
+package web
+
+import (
+	"github.com/stretchr/testify/require"
+	"html/template"
+	"log"
+	"mime/multipart"
+	"path/filepath"
+	"testing"
+)
+
+func TestFileUploader(t *testing.T) {
+	tpl, err := template.ParseGlob("testdata/tpls/*.gohtml")
+	require.NoError(t, err)
+	engine := &GoTemplateEngine{
+		T: tpl,
+	}
+
+	s := NewHTTPServer(ServerWithTemplateEngine(engine))
+
+	s.Get("/upload", func(ctx *Context) {
+		err := ctx.Render("upload.gohtml", nil)
+		if err != nil {
+			log.Println(err)
+		}
+	})
+
+	// 上传文件
+	uploader := FileUploader{
+		FileField: "myfile",
+		DstPathFunc: func(fileHeader *multipart.FileHeader) string {
+			return filepath.Join("testdata", "uploads", fileHeader.Filename)
+		},
+	}
+	s.Post("/upload", uploader.Handle())
+
+	s.Start(":8081")
+}
