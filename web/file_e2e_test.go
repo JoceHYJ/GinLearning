@@ -51,3 +51,11 @@ func TestFileDownloader(t *testing.T) {
 	// http://localhost:8081/download?file=myfile.txt
 	s.Start(":8081")
 }
+
+func TestStaticResourceHandler(t *testing.T) {
+	s := NewHTTPServer()
+	sr := NewStaticResourceHandler(filepath.Join("testdata", "static"))
+	// http://localhost:8081/static/xxx.jpg
+	s.Get("/static/:file", sr.Handle)
+	s.Start(":8081")
+}

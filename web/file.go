@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 type FileUploader struct {
@@ -108,4 +109,51 @@ func (f *FileDownloader) Handle() HandleFunc {
 		header.Set("Pragma", "public")
 		http.ServeFile(ctx.Resp, ctx.Req, path)
 	}
+}
+
+// 静态资源处理采用 Option Handle 模式
+
+type StaticResourceHandler struct {
+	dir                     string
+	extensionContentTypeMap map[string]string
+}
+
+func NewStaticResourceHandler(dir string) *StaticResourceHandler {
+	res := &StaticResourceHandler{
+		dir: dir,
+		extensionContentTypeMap: map[string]string{
+			"jpeg": "image/jpeg",
+			"jpe":  "image/jpeg",
+			"jpg":  "image/jpeg",
+			"png":  "image/png",
+			"pdf":  "image/pdf",
+			"doc":  "application/msword",
+			"docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		},
+	}
+	return res
+}
+
+func (s *StaticResourceHandler) Handle(ctx *Context) {
+	// 静态资源处理逻辑
+	file, err := ctx.PathValue("file").String()
+	if err != nil {
+		ctx.RespStatusCode = http.StatusBadRequest
+		ctx.RespData = []byte("请求路径错误")
+		return
+	}
+	dst := filepath.Join(s.dir, file)
+	data, err := os.ReadFile(dst)
+	if err != nil {
+		ctx.RespStatusCode = http.StatusInternalServerError
+		ctx.RespData = []byte("服务器内部错误") // 避免攻击者通过调用 API 查看文件是否存在
+		return
+	}
+	ext := filepath.Ext(dst)[1:] // 获取文件扩展名
+	header := ctx.Resp.Header()
+	// 可能的 Content-Type 文本 图片 多媒体
+	header.Set("Content-Type", s.extensionContentTypeMap[ext])
+	header.Set("Content-Length", strconv.Itoa(len(data)))
+	ctx.RespData = data
+	ctx.RespStatusCode = http.StatusOK
 }
