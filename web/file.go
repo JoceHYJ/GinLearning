@@ -1,6 +1,7 @@
 package web
 
 import (
+	lru "github.com/hashicorp/golang-lru"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -113,14 +114,23 @@ func (f *FileDownloader) Handle() HandleFunc {
 
 // 静态资源处理采用 Option Handle 模式
 
+type StaticResourceHandlerOption func(handler *StaticResourceHandler) // 允许用户通过 Option 模式自定义配置修改默认值
+
 type StaticResourceHandler struct {
 	dir                     string
+	cache                   *lru.Cache
 	extensionContentTypeMap map[string]string
+	maxFileSize             int // 大文件不缓存
 }
 
-func NewStaticResourceHandler(dir string) *StaticResourceHandler {
+func NewStaticResourceHandler(dir string, opts ...StaticResourceHandlerOption) (*StaticResourceHandler, error) {
+	c, err := lru.New(1000) // 创建一个大小为 1000 (key-value 的数量) 的 LRU 缓存
+	if err != nil {
+		return nil, err
+	}
 	res := &StaticResourceHandler{
-		dir: dir,
+		dir:   dir,
+		cache: c,
 		extensionContentTypeMap: map[string]string{
 			"jpeg": "image/jpeg",
 			"jpe":  "image/jpeg",
@@ -130,30 +140,68 @@ func NewStaticResourceHandler(dir string) *StaticResourceHandler {
 			"doc":  "application/msword",
 			"docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 		},
+		maxFileSize: 1024 * 1024 * 10,
 	}
-	return res
+	for _, opt := range opts {
+		opt(res)
+	}
+	return res, nil
 }
 
 func (s *StaticResourceHandler) Handle(ctx *Context) {
 	// 静态资源处理逻辑
 	file, err := ctx.PathValue("file").String()
+	dst := filepath.Join(s.dir, file)
+	ext := filepath.Ext(dst)[1:] // 获取文件扩展名
+	header := ctx.Resp.Header()
+
 	if err != nil {
 		ctx.RespStatusCode = http.StatusBadRequest
 		ctx.RespData = []byte("请求路径错误")
 		return
 	}
-	dst := filepath.Join(s.dir, file)
+
+	if data, ok := s.cache.Get(file); ok {
+		contentType := s.extensionContentTypeMap[ext]
+		header.Set("Content-Type", contentType)
+		header.Set("Content-Length", strconv.Itoa(len(data.([]byte))))
+		ctx.RespData = data.([]byte)
+		ctx.RespStatusCode = http.StatusOK
+		return
+	}
+
 	data, err := os.ReadFile(dst)
 	if err != nil {
 		ctx.RespStatusCode = http.StatusInternalServerError
 		ctx.RespData = []byte("服务器内部错误") // 避免攻击者通过调用 API 查看文件是否存在
 		return
 	}
-	ext := filepath.Ext(dst)[1:] // 获取文件扩展名
-	header := ctx.Resp.Header()
+	// 缓存处理->大文件不缓存
+	if len(data) <= s.maxFileSize {
+		s.cache.Add(file, data)
+	}
 	// 可能的 Content-Type 文本 图片 多媒体
-	header.Set("Content-Type", s.extensionContentTypeMap[ext])
+	contentType := s.extensionContentTypeMap[ext]
+	header.Set("Content-Type", contentType)
 	header.Set("Content-Length", strconv.Itoa(len(data)))
 	ctx.RespData = data
 	ctx.RespStatusCode = http.StatusOK
+}
+
+func StaticWithMaxFileSize(maxSize int) StaticResourceHandlerOption {
+	return func(handler *StaticResourceHandler) {
+		handler.maxFileSize = maxSize
+	}
+}
+
+func StaticWithCache(cache *lru.Cache) StaticResourceHandlerOption {
+	return func(handler *StaticResourceHandler) {
+		handler.cache = cache
+	}
+}
+
+func StaticWithExtensionContentTypeMap(extensionContentTypeMap map[string]string) StaticResourceHandlerOption {
+	return func(handler *StaticResourceHandler) {
+		handler.extensionContentTypeMap = extensionContentTypeMap
+	}
 }
