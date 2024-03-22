@@ -54,7 +54,8 @@ func TestFileDownloader(t *testing.T) {
 
 func TestStaticResourceHandler(t *testing.T) {
 	s := NewHTTPServer()
-	sr := NewStaticResourceHandler(filepath.Join("testdata", "static"))
+	sr, err := NewStaticResourceHandler(filepath.Join("testdata", "static"))
+	require.NoError(t, err)
 	// http://localhost:8081/static/xxx.jpg
 	s.Get("/static/:file", sr.Handle)
 	s.Start(":8081")
