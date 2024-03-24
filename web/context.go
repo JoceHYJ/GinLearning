@@ -23,6 +23,10 @@ type Context struct {
 
 	// 页面渲染引擎
 	tplEngine TemplateEngine
+
+	// 用户可以自由决定在这里存储什么，主要用于解决在不同 Middleware 之间数据传递的问题
+	// 但是 UserValues 在初始状态的时候总是 nil，需要手动初始化
+	UserValues map[string]any
 }
 
 // BindJson 解析请求体中的 json 数据
