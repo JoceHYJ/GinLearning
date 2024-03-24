@@ -29,22 +29,22 @@ func NewStore(expiration time.Duration) *Store {
 func (s *Store) Generate(ctx context.Context, id string) (session.Session, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	session := &memorySession{
+	sess := &memorySession{
 		id:   id,
 		data: make(map[string]string),
 	}
-	s.sessionCache.Set(session.ID(), session, s.expiration)
-	return session, nil
+	s.sessionCache.Set(sess.ID(), sess, s.expiration)
+	return sess, nil
 }
 
 func (s *Store) Refresh(ctx context.Context, id string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	session, ok := s.sessionCache.Get(id)
+	sess, ok := s.sessionCache.Get(id)
 	if !ok {
 		return errors.New("session: session not found")
 	}
-	s.sessionCache.Set(session.(*memorySession).ID(), session, s.expiration)
+	s.sessionCache.Set(sess.(*memorySession).ID(), sess, s.expiration)
 	return nil
 }
 
@@ -58,11 +58,11 @@ func (s *Store) Remove(ctx context.Context, id string) error {
 func (s *Store) Get(ctx context.Context, id string) (session.Session, error) {
 	s.mutex.RLock()
 	defer s.mutex.Unlock()
-	session, ok := s.sessionCache.Get(id)
+	sess, ok := s.sessionCache.Get(id)
 	if !ok {
 		return nil, errors.New("session: session not found")
 	}
-	return session.(*memorySession), nil
+	return sess.(*memorySession), nil
 }
 
 type memorySession struct {
