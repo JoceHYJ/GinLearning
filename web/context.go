@@ -29,6 +29,10 @@ type Context struct {
 	UserValues map[string]any
 }
 
+func (c *Context) Redirect(url string) {
+	http.Redirect(c.Resp, c.Req, url, http.StatusFound)
+}
+
 // BindJson 解析请求体中的 json 数据
 func (c *Context) BindJson(val any) error {
 	//if val == nil {
@@ -128,6 +132,13 @@ func (s StringValue) ToInt64() (int64, error) {
 		return 0, s.err
 	}
 	return strconv.ParseInt(s.val, 10, 64)
+}
+
+func (s StringValue) ToUInt64() (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	return strconv.ParseUint(s.val, 10, 64)
 }
 
 func (s StringValue) String() (string, error) {
