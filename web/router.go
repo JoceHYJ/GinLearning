@@ -40,7 +40,7 @@ func newRouter() router {
 // - 不能在同一个位置注册不同的参数路由，例如 /user/:id 和 /user/:name 冲突
 // - 不能在同一个位置同时注册通配符路由和参数路由，例如 /user/:id 和 /user/* 冲突
 // - 同名路径参数，在路由匹配的时候，值会被覆盖。例如 /user/:id/abc/:id，那么 /user/123/abc/456 最终 id = 456
-func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
+func (r *router) addRoute(method, path string, handleFunc HandleFunc, ms ...Middleware) {
 	// 对 path 加限制 --> 只支持 /user/home 这种格式
 	if path == "" {
 		panic("web:路径不能为空字符串")
@@ -73,6 +73,7 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 		}
 		root.handler = handleFunc
 		root.route = "/"
+		root.mdls = ms
 		return
 	}
 
@@ -97,6 +98,7 @@ func (r *router) addRoute(method, path string, handleFunc HandleFunc) {
 	// 把 handler 挂载到 root 上(赋值)
 	root.handler = handleFunc
 	root.route = path
+	root.mdls = ms
 }
 
 // findRoute 查找路由的方法(查找对应的节点)
@@ -109,7 +111,8 @@ func (r *router) findRoute(method, path string) (*matchInfo, bool) {
 	}
 	if path == "/" {
 		return &matchInfo{
-			n: root,
+			n:    root,
+			mdls: root.mdls,
 		}, true
 	}
 	// 把前置和后置的 / 都去掉
@@ -155,7 +158,32 @@ func (r *router) findRoute(method, path string) (*matchInfo, bool) {
 		root = child
 	}
 	mi.n = root
+	mi.mdls = r.findMdls(root, segs)
 	return mi, true
+}
+
+// findMdls
+func (r *router) findMdls(root *node, segs []string) []Middleware {
+	queue := []*node{root}
+	res := make([]Middleware, 0, 16)
+	for i := 0; i < len(segs); i++ {
+		seg := segs[i]
+		var children []*node
+		for _, cur := range queue {
+			if len(cur.mdls) > 0 {
+				res = append(res, cur.mdls...)
+			}
+			children = append(children, cur.childrenOf(seg)...)
+		}
+		queue = children
+	}
+
+	for _, cur := range queue {
+		if len(cur.mdls) > 0 {
+			res = append(res, cur.mdls...)
+		}
+	}
+	return res
 }
 
 // childOrCreate 用于查找或创建节点的子节点
@@ -329,6 +357,25 @@ func (n *node) parseParam(seg string) (string, string, bool) {
 	return seg, "", false
 }
 
+// childrenOf 可路由的中间件 -> 路由树的层序遍历
+func (n *node) childrenOf(seg string) []*node {
+	res := make([]*node, 0, 4)
+	var static *node
+	if n.children != nil {
+		static = n.children[seg]
+	}
+	if n.starChild != nil {
+		res = append(res, n.starChild)
+	}
+	if n.paramChild != nil {
+		res = append(res, n.paramChild)
+	}
+	if static != nil {
+		res = append(res, static)
+	}
+	return res
+}
+
 type nodeType int
 
 const (
@@ -370,12 +417,19 @@ type node struct {
 
 	// route 到达该节点的完整路由路径
 	route string
+
+	// 注册在节点上的 middleware
+	mdls []Middleware
+
+	// 路由化的中间件
+	matchedMdls []Middleware
 }
 
 // 参数匹配信息
 type matchInfo struct {
 	n          *node
 	pathParams map[string]string
+	mdls       []Middleware
 }
 
 func (m *matchInfo) addValue(key string, value string) {

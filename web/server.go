@@ -21,7 +21,7 @@ type Server interface {
 	// method: HTTP 方法
 	// path: 请求路径(路由)
 	// handleFunc: 处理函数(业务逻辑)
-	addRoute(method string, path string, handleFunc HandleFunc)
+	addRoute(method string, path string, handleFunc HandleFunc, mdls ...Middleware)
 	// addRoute1 提供多个 handleFunc: 用户自己组合
 	//addRoute1(method string, path string, handles ...HandleFunc)
 }

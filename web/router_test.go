@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// 该单元测试没有支持可路由的中间件测试, 测试代码通过需要将 web 框架退回上一版本
+
 // TestRouter_addRoute() 测试注册路由
 func TestRouter_addRoute(t *testing.T) {
 	// 1.构造路由树
